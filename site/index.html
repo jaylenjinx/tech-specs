@@ -217,7 +217,7 @@ const METRO_PATCH=[
  ...Array.from({length:10},(_,i)=>[401+i,"Acme XA400 Energy Spot Pro","Mode 1 25ch",25,1,201+i*25,i<6?"LX2":"LX3"]),
  ["Strobes"],
  [601,"Acme Ginamp Strobe 2","36ch",36,2,1,"LED truss"],[602,"Acme Ginamp Strobe 2","36ch",36,2,37,"LED truss"],[603,"Acme Ginamp Strobe 2","36ch",36,2,73,"LED truss"],[604,"Acme Ginamp Strobe 2","36ch",36,2,109,"LED truss"],
- [605,"Acme Ginamp Strobe 2","36ch",36,2,145,"DS floor"],[606,"Acme Ginamp Strobe 2","36ch",36,2,181,"LED truss (US floor in the patch)"],[607,"Acme Ginamp Strobe 2","36ch",36,2,217,"LED truss (US floor in the patch)"],[608,"Acme Ginamp Strobe 2","36ch",36,2,253,"DS floor"]
+ [605,"Acme Ginamp Strobe 2","36ch",36,2,145,"DS floor"],[606,"Acme Ginamp Strobe 2","36ch",36,2,181,"US floor"],[607,"Acme Ginamp Strobe 2","36ch",36,2,217,"US floor"],[608,"Acme Ginamp Strobe 2","36ch",36,2,253,"DS floor"]
 ];
 
 const SOCIAL_PATCH=[
@@ -404,14 +404,14 @@ const RIGS={};
   const LX1=bar("LX1 (FOH)",-3.4,3.6,-4.5,4.5,{dimNote:"over the dancefloor"}),W=bar("Wash bar",1.3,4.4,-4.5,4.5),LX2=bar("LX2",2.9,4.4,-4.5,4.5),LX3=bar("LX3",4.7,4.4,-4.5,4.5,{planY:4.25,dimNote:"+4.7 m"}),LED=bar("LED truss",5.1,4.6,-4.5,4.5,{planY:5.45,dimNote:"+5.1 m"}); /* LX3 and the LED truss are 0.4 m apart; spread on the plan only */
   const P="Stage Par 100 Colour IP",X="XA400 Energy Spot Pro",G="Ginamp Strobe 2",B="Stage Blinder IP",S="Source4 Profile";
   RIGS.metro={stage:{w:10.1,d:5.7,deck:0.97},
-    note:"Redrawn from the Century truss plot sent in December 2025, with the September 2026 patch. Bar distances and the 3.8 m stage-to-spot trim are from the plot; positions along the bars are scaled assuming 9 m bars, since the plot isn't to scale. Two unlabelled fresnel symbols on LX1 aren't drawn. Ginamps 605 and 608 aren't on the plot and stay at their patched DS floor spots.",
+    note:"Redrawn from the Century truss plot sent in December 2025, with the September 2026 patch. Bar distances and the 3.8 m stage-to-spot trim are from the plot; positions along the bars are scaled assuming 9 m bars, since the plot isn't to scale. Two unlabelled fresnel symbols on LX1 aren't drawn. Ginamps 605\u2013608 are the floor package: 606 and 607 are drawn upstage under the LED truss on the plot, 605 and 608 aren't drawn and sit at their patched DS floor spots.",
     bars:[LX1,W,LX2,LX3,LED],
     fx:[...on(LX1,[[1,"fres",-4.15,0,"1.2k Fresnel"],[11,"prof",-3.23,0,S],[53,"blind",-2.74,0,B],[12,"prof",-1.39,0,S],[13,"prof",1.39,0,S],[56,"blind",2.74,0,B],[14,"prof",3.23,0,S],[2,"fres",4.15,0,"1.2k Fresnel"]]),
       ...on(W,[[101,"par",-3.8,0,P],[102,"par",-1.57,0,P],[15,"prof",-0.14,0,S],[103,"par",1.82,0,P],[104,"par",3.83,0,P]]),
       ...on(LX2,[[401,"spot",-3.85,0,X],...seq(201,4,[-3.49,-3.23,-2.99,-2.75],"par",0,P),[402,"spot",-2.35,0,X],[52,"blind",-1.53,0,B],[403,"spot",-0.73,0,X],...seq(205,4,[-0.34,-0.09,0.17,0.44],"par",0,P),[404,"spot",0.83,0,X],[55,"blind",1.65,0,B],[405,"spot",2.47,0,X],...seq(209,4,[2.8,3.07,3.32,3.57],"par",0,P),[406,"spot",3.89,0,X]]),
       ...on(LX3,[[407,"spot",-3.14,0,X],...seq(213,4,[-2.75,-2.52,-2.28,-2.04],"par",0,P),[408,"spot",-1.71,0,X],...seq(217,4,[-0.33,-0.07,0.17,0.42],"par",0,P),[409,"spot",1.71,0,X],...seq(221,4,[2.1,2.34,2.58,2.81],"par",0,P),[410,"spot",3.13,0,X]]),
-      ...on(LED,[[51,"blind",-3.98,0,B],[601,"strobe",-3.33,0,G],[606,"strobe",-2.39,0,G],[602,"strobe",-1.28,0,G],[603,"strobe",1.33,0,G],[607,"strobe",2.38,0,G],[604,"strobe",3.4,0,G],[54,"blind",3.96,0,B]]),
-      at(605,"strobe",-3.5,0.45,0.15,G,"DS floor"),at(608,"strobe",3.5,0.45,0.15,G,"DS floor")]};
+      ...on(LED,[[51,"blind",-3.98,0,B],[601,"strobe",-3.33,0,G],[602,"strobe",-1.28,0,G],[603,"strobe",1.33,0,G],[604,"strobe",3.4,0,G],[54,"blind",3.96,0,B]]),
+      at(605,"strobe",-3.5,0.45,0.15,G,"DS floor"),at(608,"strobe",3.5,0.45,0.15,G,"DS floor"),at(606,"strobe",-2.39,5.4,0.15,G,"US floor"),at(607,"strobe",2.38,5.4,0.15,G,"US floor")]};
 })();
 (()=>{ /* Factory: fixture order and spacing measured from the April 2026 plot */
   const FOH=bar("FOH bar",-1.6,2.9,-5.6,5.6),DS=bar("LX1",1.5,3,-4,4),MID=bar("LX2",3,3,-4,4),US=bar("LX3",4.5,3,-4,4);
