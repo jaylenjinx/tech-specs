@@ -206,18 +206,18 @@ const ENMORE_PATCH=[
 
 const METRO_PATCH=[
  ["Conventionals on dimmers"],
- [1,"1.2k Fresnel (dimmer)","1ch",1,1,1,"FOH SR"],[2,"1.2k Fresnel (dimmer)","1ch",1,1,2,"FOH SL"],
- [11,"ETC Source4 Profile (dimmer)","1ch",1,1,3,"FOH"],[12,"ETC Source4 Profile (dimmer)","1ch",1,1,4,"FOH"],[13,"ETC Source4 Profile (dimmer)","1ch",1,1,5,"FOH"],[14,"ETC Source4 Profile (dimmer)","1ch",1,1,6,"FOH"],[15,"ETC Source4 Profile (dimmer)","1ch",1,1,7,"DSC"],
+ [1,"1.2k Fresnel (dimmer)","1ch",1,1,1,"LX1 SR. Shares dimmer 1 with 2 on the Dec 2025 plot (the patch has it at 1.1, 2 at 1.2)."],[2,"1.2k Fresnel (dimmer)","1ch",1,1,1,"LX1 SL. Shares dimmer 1 with 1 on the Dec 2025 plot."],
+ [11,"ETC Source4 Profile (dimmer)","1ch",1,1,2,"LX1"],[12,"ETC Source4 Profile (dimmer)","1ch",1,1,3,"LX1"],[13,"ETC Source4 Profile (dimmer)","1ch",1,1,4,"LX1"],[14,"ETC Source4 Profile (dimmer)","1ch",1,1,5,"LX1"],[15,"ETC Source4 Profile (dimmer)","1ch",1,1,6,"Wash bar, centre"],
  ["Blinders"],
- [51,"Acme Stage Blinder IP","2ch",2,1,451,"US"],[52,"Acme Stage Blinder IP","2ch",2,1,457,"MS"],[53,"Acme Stage Blinder IP","2ch",2,1,463,"FOH"],[54,"Acme Stage Blinder IP","2ch",2,1,469,"US"],[55,"Acme Stage Blinder IP","2ch",2,1,475,"MS"],[56,"Acme Stage Blinder IP","2ch",2,1,481,"FOH"],
+ [51,"Acme Stage Blinder IP","2ch",2,1,451,"LED truss"],[52,"Acme Stage Blinder IP","2ch",2,1,457,"LX2"],[53,"Acme Stage Blinder IP","2ch",2,1,463,"LX1"],[54,"Acme Stage Blinder IP","2ch",2,1,469,"LED truss"],[55,"Acme Stage Blinder IP","2ch",2,1,475,"LX2"],[56,"Acme Stage Blinder IP","2ch",2,1,481,"LX1"],
  ["LED pars"],
- [101,"Acme Stage Par 100 Colour IP","6ch",6,1,25,"DS side fill"],[102,"Acme Stage Par 100 Colour IP","6ch",6,1,31,"DS side fill"],[103,"Acme Stage Par 100 Colour IP","6ch",6,1,37,"DS side fill"],[104,"Acme Stage Par 100 Colour IP","6ch",6,1,43,"DS side fill"],
- ...Array.from({length:24},(_,i)=>[201+i,"Acme Stage Par 100 Colour IP","6ch",6,1,51+i*6,i<12?"MS LED can":"US LED can"]),
+ [101,"Acme Stage Par 100 Colour IP","6ch",6,1,25,"Wash bar"],[102,"Acme Stage Par 100 Colour IP","6ch",6,1,31,"Wash bar"],[103,"Acme Stage Par 100 Colour IP","6ch",6,1,37,"Wash bar"],[104,"Acme Stage Par 100 Colour IP","6ch",6,1,43,"Wash bar"],
+ ...Array.from({length:24},(_,i)=>[201+i,"Acme Stage Par 100 Colour IP","6ch",6,1,51+i*6,i<12?"LX2":"LX3"]),
  ["Moving lights"],
- ...Array.from({length:10},(_,i)=>[401+i,"Acme XA400 Energy Spot Pro","Mode 1 25ch",25,1,201+i*25,i<6?"MS":"US"]),
+ ...Array.from({length:10},(_,i)=>[401+i,"Acme XA400 Energy Spot Pro","Mode 1 25ch",25,1,201+i*25,i<6?"LX2":"LX3"]),
  ["Strobes"],
- [601,"Acme Ginamp Strobe 2","36ch",36,2,1,"US LED truss"],[602,"Acme Ginamp Strobe 2","36ch",36,2,37,"US LED truss"],[603,"Acme Ginamp Strobe 2","36ch",36,2,73,"US LED truss"],[604,"Acme Ginamp Strobe 2","36ch",36,2,109,"US LED truss"],
- [605,"Acme Ginamp Strobe 2","36ch",36,2,145,"DS floor"],[606,"Acme Ginamp Strobe 2","36ch",36,2,181,"US floor"],[607,"Acme Ginamp Strobe 2","36ch",36,2,217,"US floor"],[608,"Acme Ginamp Strobe 2","36ch",36,2,253,"DS floor"]
+ [601,"Acme Ginamp Strobe 2","36ch",36,2,1,"LED truss"],[602,"Acme Ginamp Strobe 2","36ch",36,2,37,"LED truss"],[603,"Acme Ginamp Strobe 2","36ch",36,2,73,"LED truss"],[604,"Acme Ginamp Strobe 2","36ch",36,2,109,"LED truss"],
+ [605,"Acme Ginamp Strobe 2","36ch",36,2,145,"DS floor"],[606,"Acme Ginamp Strobe 2","36ch",36,2,181,"LED truss (US floor in the patch)"],[607,"Acme Ginamp Strobe 2","36ch",36,2,217,"LED truss (US floor in the patch)"],[608,"Acme Ginamp Strobe 2","36ch",36,2,253,"DS floor"]
 ];
 
 const SOCIAL_PATCH=[
@@ -337,18 +337,18 @@ const VENUES=[
   sources:[["Enmore lighting plot, September 2026 (Word file)","2/2026/09/26033459/ENMORE-September-2026-LX-Plot-copy.docx","DOCX"],["Enmore lighting patch, September 2026","2/2026/09/26032754/Enmore-Theatre-Patch-September-2026.pdf","PDF, 2 pp"],["Enmore lighting package and plot, July 2025","2/2025/08/28031506/Enmore-Theatre-Lighting-Package-July-2025-V2.pdf","PDF, 4 pp"],["DMX node gateway upgrade with IP addresses","2/2026/09/26032758/ENMORE-DMX-GATEWAY-NODE-UPGRADE-2025-with-IP-addresses-V1.pdf","PDF, 1 p"],["Enmore production spec, January 2026","2/2026/09/16021716/ENMORE-Production-Specs-January-2026.pdf","PDF, 9 pp"],["Enmore comedy and spoken word spec, April 2026","2/2026/09/16021807/ENMORE-Comedy-Spoken-Word-Specs-April-2026.pdf","PDF, 9 pp"]]},
 
 { id:"metro", tab:"Metro", name:"The Metro Theatre", addr:"624 George Street, Sydney NSW 2000",
-  chips:[["ok","Spec: October 2026"],["ok","Patch: September 2026"],["warn","Plot: June 2024"]],
-  note:"<strong>No current plot.</strong> The 2026 specs say the plot is on the following page, but neither file includes one. The June 2024 drawings below use the same fixture types as the 2026 patch; they have no fixture IDs, so match them using the patch's location notes.",
-  stats:[["1,200","Concert capacity"],["550","Theatre capacity"],["10.1 \u00d7 6 m","Stage W \u00d7 D"],["970 mm","Stage height"],["4.6 m","Stage to ceiling"],["12.8 m","DSE to mix"]],
+  chips:[["ok","Spec: October 2026"],["ok","Patch: September 2026"],["ok","Truss plot: December 2025"]],
+  note:"<strong>Plot from Century, December 2025.</strong> Sent directly by the venue: every fixture is labelled with its DMX address, and it gives bar distances and trims. It matches the September 2026 patch except the conventionals, which sit one dimmer lower (both fresnels on dimmer 1, Source4s on 2\u20136); the patch below follows the plot.",
+  stats:[["1,200","Concert capacity"],["550","Theatre capacity"],["10.1 \u00d7 6 m","Stage W \u00d7 D"],["970 mm","Stage height"],["6.5 m","Stage to ceiling"],["12.8 m","DSE to mix"]],
   rig:{title:"House rig",src:"Metro spec, October 2026",
     groups:[["Control",["grandMA3 Compact XT","12 ch Jands FP12 dimmer","Jands DD6-2 data splitter"]],
             ["Fixtures",[["10","ACME XA400 Energy Spot Pro"],["24","ACME Stage Par 100 Colour"],["8","Acme Ginamp"],["6","Acme Stage Blinder"],["4","ACME RGBW Stage Par Colour"],["5","ETC Source4 Profile"],["2","Selecon 1K wash"]]],
             ["On request",["Acme Ozone, Atomic strobes, Duet / 4-way blinders","Hazer, dry ice, 1.2K Explorer followspot","Upright truss and baseplates"]],
             ["Video",["5.5 \u00d7 2.5 m LED screen on the US truss","1848 \u00d7 840 px, HDMI at SR or FOH"]]]},
   patch:{rows:METRO_PATCH,title:"Patch (September 2026)",src:"Metro Theatre Lighting Patch, September 2026"},
-  drawings:[["img/metro-plot-bars.png","Lighting plot by bar, June 2024","Each bar drawn separately, with the legend."],["img/metro-plot-overview.png","Lighting plot overview, June 2024","Whole rig in plan with the floor positions."]],
-  info:[["Stage",[["Stage width","10.1 m"],["Height from floor","970 mm"],["Stage to ceiling","4.6 m"],["DSE to rear wall","6 m"],["Surface","Timber, carpeted, flat"],["Fittings","2 \u00d7 black legs, upstage black smother"]]],
-        ["Trusses and power",[["FOH truss","Tri truss over the dancefloor, 2 \u00d7 500 kg, 3.5 m from DSE"],["Upstage truss","Tri truss, 9 m wide, 2\u20133 \u00d7 500 kg, 6 m from DSE"],["Lighting power","4 \u00d7 32 A 3-phase SR, 2 used by the house rig"],["Audio power","2 \u00d7 32 A SL, 1 \u00d7 32 A SR"]]],
+  drawings:[["img/metro-truss-plot-2025.png","Truss plot, December 2025","From Century directly: DMX addresses on every fixture, bar distances and trims."],["img/metro-plot-bars.png","Lighting plot by bar, June 2024","Each bar drawn separately, with the legend."],["img/metro-plot-overview.png","Lighting plot overview, June 2024","Whole rig in plan with the floor positions."]],
+  info:[["Stage",[["Stage width","10.1 m"],["Height from floor","970 mm"],["Stage to ceiling","6.5 m on the Dec 2025 plot (the spec says 4.6 m)"],["DSE to rear wall","5.7 m on the plot (LED truss 5.1 m, plus 600 mm); the spec says 6 m"],["Surface","Timber, carpeted, flat"],["Fittings","2 \u00d7 black legs, upstage black smother"]]],
+        ["Trusses and power",[["LX1 (FOH)","Tri truss over the dancefloor, 3.4 m downstage of DSE"],["Wash bar, LX2, LX3","1.3 m, 2.9 m and 4.7 m upstage of DSE"],["LED truss","5.1 m upstage of DSE, 600 mm off the upstage wall"],["Trims","Stage to bottom of the Energy Spot Pros 3.8 m; dancefloor to the aircon unit at DSE 3.9 m"],["Lighting power","4 \u00d7 32 A 3-phase SR, 2 used by the house rig"],["Audio power","2 \u00d7 32 A SL, 1 \u00d7 32 A SR"]]],
         ["Audio",[["PA","8 \u00d7 V-Dosc, 8 \u00d7 SB218"],["Fills","4 \u00d7 NEXO Alpha M3, 2 \u00d7 Alpha B1"],["FOH","dLive S5000, 64/32 IO, Waves and Dante"],["Monitors","dLive S3000, 64/32 IO"],["Wedges","9 \u00d7 Wayloud, 2 \u00d7 EVX, 6 mixes plus drum and cue"],["Multicore","60 ch with 2-way split"]]],
         ["Load in",[["Dock","Central Lane, 3.6 m clearance, 5.5 \u00d7 10 m"],["Door","2,000 H \u00d7 1,480 W mm"],["To stage","7 m to the stairs, then 29 stairs"],["Rooms","2 dressing rooms and a production office, SR"]]]],
   sources:[["Metro Theatre lighting patch, September 2026","12/2026/09/16030424/Metro-Theatre-Patch-September-2026.pdf","PDF, 2 pp"],["Metro Theatre spec, October 2026","12/2026/09/25015255/THE-METRO-THEATRE-OCTOBER-2026-2.pdf","PDF, 7 pp"],["Metro Theatre spec, June 2024 (plot)","12/2024/08/14215915/METRO-THEATRE-TECH-SPEC-JUNE-2024-9.pdf","PDF, 10 pp"]]},
@@ -399,18 +399,19 @@ const RIGS={};
     31:across(31,"High side wash"),34:across(34,"High side wash"),41:across(41,"High side wash"),42:across(42,"High side wash"),
     32:top(32,-1.5,"Rear top wash"),33:top(33,-1.5,"Rear top wash"),51:top(51,2,"Front top wash"),52:top(52,2,"Front top wash"),53:top(53,2,"Front top wash")};
 })();
-(()=>{ /* Metro: truss distances from the spec; bars matched to the June 2024 drawing */
-  const FOH=bar("FOH truss",-3.5,3.6,-4.5,4.5,{dimNote:"over the dancefloor"}),MS=bar("Midstage",2,4,-4.6,4.6),US=bar("Upstage",4,4,-4.6,4.6),LED=bar("LED truss",5.4,4.2,-4.5,4.5);
-  const P="Stage Par 100 Colour IP",X="XA400 Energy Spot Pro",grp=c=>[c-0.45,c-0.15,c+0.15,c+0.45],pars=[...grp(-3.2),...grp(0),...grp(3.2)];
-  RIGS.metro={stage:{w:10.1,d:6,deck:0.97},
-    note:"Redrawn from the June 2024 drawings with the September 2026 patch. Truss distances come from the spec. Trims are estimated from the 4.6 m stage-to-ceiling height.",
-    bars:[FOH,MS,US,LED],
-    fx:[...on(FOH,[[1,"fres",-4,0,"1.2k Fresnel"],...seq(11,4,[-2.4,-0.8,0.8,2.4],"prof",0,"Source4 Profile"),[15,"prof",0,-0.28,"Source4 Profile (DSC)"],[2,"fres",4,0,"1.2k Fresnel"],[53,"blind",-3.2,0.24,"Stage Blinder IP"],[56,"blind",3.2,0.24,"Stage Blinder IP"]]),
-      ...on(MS,[...seq(401,6,[-4.2,-2.2,-1,1,2.2,4.2],"spot",-0.12,X),...seq(201,12,pars,"par",0.14,P),[52,"blind",-1.6,0.14,"Stage Blinder IP"],[55,"blind",1.6,0.14,"Stage Blinder IP"]]),
-      ...on(US,[...seq(407,4,[-4.2,-2.2,2.2,4.2],"spot",-0.12,X),...seq(213,12,pars,"par",0.14,P)]),
-      ...on(LED,[...seq(601,4,[-3.4,-1.15,1.15,3.4],"strobe",0,"Ginamp Strobe 2"),[51,"blind",-4.3,0,"Stage Blinder IP"],[54,"blind",4.3,0,"Stage Blinder IP"]]),
-      at(101,"par",-4.8,0.35,1.5,P,"DS side fill SR"),at(102,"par",-4.8,1.05,1.5,P,"DS side fill SR"),at(103,"par",4.8,0.35,1.5,P,"DS side fill SL"),at(104,"par",4.8,1.05,1.5,P,"DS side fill SL"),
-      at(605,"strobe",-3.5,0.45,0.15,"Ginamp Strobe 2","DS floor"),at(608,"strobe",3.5,0.45,0.15,"Ginamp Strobe 2","DS floor"),at(606,"strobe",-2,5.5,0.15,"Ginamp Strobe 2","US floor"),at(607,"strobe",2,5.5,0.15,"Ginamp Strobe 2","US floor")]};
+(()=>{ /* Metro: bar distances, trims and fixture order from the venue's December 2025 truss plot.
+   The plot isn't to scale across the stage; positions assume 9 m bars. */
+  const LX1=bar("LX1 (FOH)",-3.4,3.6,-4.5,4.5,{dimNote:"over the dancefloor"}),W=bar("Wash bar",1.3,4.4,-4.5,4.5),LX2=bar("LX2",2.9,4.4,-4.5,4.5),LX3=bar("LX3",4.7,4.4,-4.5,4.5,{planY:4.25,dimNote:"+4.7 m"}),LED=bar("LED truss",5.1,4.6,-4.5,4.5,{planY:5.45,dimNote:"+5.1 m"}); /* LX3 and the LED truss are 0.4 m apart; spread on the plan only */
+  const P="Stage Par 100 Colour IP",X="XA400 Energy Spot Pro",G="Ginamp Strobe 2",B="Stage Blinder IP",S="Source4 Profile";
+  RIGS.metro={stage:{w:10.1,d:5.7,deck:0.97},
+    note:"Redrawn from the Century truss plot sent in December 2025, with the September 2026 patch. Bar distances and the 3.8 m stage-to-spot trim are from the plot; positions along the bars are scaled assuming 9 m bars, since the plot isn't to scale. Two unlabelled fresnel symbols on LX1 aren't drawn. Ginamps 605 and 608 aren't on the plot and stay at their patched DS floor spots.",
+    bars:[LX1,W,LX2,LX3,LED],
+    fx:[...on(LX1,[[1,"fres",-4.15,0,"1.2k Fresnel"],[11,"prof",-3.23,0,S],[53,"blind",-2.74,0,B],[12,"prof",-1.39,0,S],[13,"prof",1.39,0,S],[56,"blind",2.74,0,B],[14,"prof",3.23,0,S],[2,"fres",4.15,0,"1.2k Fresnel"]]),
+      ...on(W,[[101,"par",-3.8,0,P],[102,"par",-1.57,0,P],[15,"prof",-0.14,0,S],[103,"par",1.82,0,P],[104,"par",3.83,0,P]]),
+      ...on(LX2,[[401,"spot",-3.85,0,X],...seq(201,4,[-3.49,-3.23,-2.99,-2.75],"par",0,P),[402,"spot",-2.35,0,X],[52,"blind",-1.53,0,B],[403,"spot",-0.73,0,X],...seq(205,4,[-0.34,-0.09,0.17,0.44],"par",0,P),[404,"spot",0.83,0,X],[55,"blind",1.65,0,B],[405,"spot",2.47,0,X],...seq(209,4,[2.8,3.07,3.32,3.57],"par",0,P),[406,"spot",3.89,0,X]]),
+      ...on(LX3,[[407,"spot",-3.14,0,X],...seq(213,4,[-2.75,-2.52,-2.28,-2.04],"par",0,P),[408,"spot",-1.71,0,X],...seq(217,4,[-0.33,-0.07,0.17,0.42],"par",0,P),[409,"spot",1.71,0,X],...seq(221,4,[2.1,2.34,2.58,2.81],"par",0,P),[410,"spot",3.13,0,X]]),
+      ...on(LED,[[51,"blind",-3.98,0,B],[601,"strobe",-3.33,0,G],[606,"strobe",-2.39,0,G],[602,"strobe",-1.28,0,G],[603,"strobe",1.33,0,G],[607,"strobe",2.38,0,G],[604,"strobe",3.4,0,G],[54,"blind",3.96,0,B]]),
+      at(605,"strobe",-3.5,0.45,0.15,G,"DS floor"),at(608,"strobe",3.5,0.45,0.15,G,"DS floor")]};
 })();
 (()=>{ /* Factory: fixture order and spacing measured from the April 2026 plot */
   const FOH=bar("FOH bar",-1.6,2.9,-5.6,5.6),DS=bar("LX1",1.5,3,-4,4),MID=bar("LX2",3,3,-4,4),US=bar("LX3",4.5,3,-4,4);
