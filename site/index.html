@@ -1,0 +1,1283 @@
+<meta charset="utf-8">
+<title>Sydney Venue Spec Pack</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a tech-office binder. Sticky venue tabs, then each venue reads top-down:
+   status strip > key numbers > rig > patch sheet > drawings > stage/power/audio > sources. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#151a21; --muted:#5b6673; --line:#d9dfe6;
+  --accent:#0b6e86; --accent-ink:#ffffff; --tape:#1d232b;
+  --ok:#1f7a4d; --ok-bg:#e3f3ea; --warn:#9a5b00; --warn-bg:#fbefd9; --bad:#a3302a; --bad-bg:#f8e2e0;
+  --row:#f7f9fb; --hl:#fff3c4;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101419; --panel:#171c23; --ink:#e7ecf1; --muted:#97a3b0; --line:#2a323c;
+  --accent:#3cc3df; --accent-ink:#0b1216; --tape:#0a0d11;
+  --ok:#6fd39f; --ok-bg:#163326; --warn:#f2b552; --warn-bg:#3a2a10; --bad:#f08a82; --bad-bg:#3b1a18;
+  --row:#1b2129; --hl:#4a3f12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101419; --panel:#171c23; --ink:#e7ecf1; --muted:#97a3b0; --line:#2a323c;
+  --accent:#3cc3df; --accent-ink:#0b1216; --tape:#0a0d11;
+  --ok:#6fd39f; --ok-bg:#163326; --warn:#f2b552; --warn-bg:#3a2a10; --bad:#f08a82; --bad-bg:#3b1a18;
+  --row:#1b2129; --hl:#4a3f12; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--tape)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* masthead */
+.mast{background:var(--tape);color:#e9edf1}
+.mast .wrap{padding-block:22px 0}
+.mast h1{font-size:clamp(28px,5vw,40px);font-weight:700;letter-spacing:.01em;text-transform:uppercase}
+.mast p{margin:4px 0 0;color:#a9b4bf;font-size:15px;max-width:70ch}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--tape);border-bottom:3px solid var(--accent)}
+.tabs .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:14px 0;scrollbar-width:none}
+.tab{appearance:none;border:0;background:transparent;color:#aeb8c2;font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:.04em;text-transform:uppercase;padding:8px 14px 9px;border-radius:6px 6px 0 0;cursor:pointer;white-space:nowrap}
+.tab:hover{color:#fff}
+.tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+
+main .wrap{padding-block:28px 60px}
+.venue{display:grid;gap:28px}
+.vhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;align-items:flex-end}
+.vhead h2{font-size:clamp(30px,5vw,44px);font-weight:700;text-transform:uppercase}
+.vhead .addr{color:var(--muted);font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.chip.ok{color:var(--ok);background:var(--ok-bg)} .chip.warn{color:var(--warn);background:var(--warn-bg)} .chip.bad{color:var(--bad);background:var(--bad-bg)}
+
+.note{border-left:3px solid var(--warn);background:var(--warn-bg);padding:10px 14px;border-radius:0 6px 6px 0;font-size:15px;max-width:80ch}
+.note strong{color:var(--warn)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.stat{background:var(--panel);padding:12px 14px}
+.stat b{display:block;font-family:var(--display);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat span{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+
+section.block{display:grid;gap:12px;min-width:0}
+.bh{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.bh h3{font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.bh .src{font-size:13px;color:var(--muted)}
+
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.cols>*{min-width:0}
+.kv{width:100%;border-collapse:collapse;font-size:15px}
+.kv th{text-align:left;font-weight:500;color:var(--muted);padding:6px 10px 6px 0;vertical-align:top;width:52%}
+.kv td{padding:6px 0;font-variant-numeric:tabular-nums}
+.kv tr+tr th,.kv tr+tr td{border-top:1px solid var(--line)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:8px;align-content:start}
+.card h4{margin:0;font-family:var(--display);font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+.card ul{margin:0;padding-left:18px}
+.card li{margin:2px 0}
+.qty{font-family:var(--mono);font-size:13px;color:var(--muted);margin-right:6px}
+
+/* patch sheet */
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tools input{font:inherit;font-size:15px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);min-width:0;flex:1 1 220px;max-width:360px}
+.btn{font:inherit;font-size:14px;font-weight:600;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.count{font-size:13px;color:var(--muted)}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table.patch{border-collapse:collapse;width:100%;font-size:14px;min-width:720px}
+.patch th{position:sticky;top:0;background:var(--panel);text-align:left;font-family:var(--display);font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:9px 10px;border-bottom:1px solid var(--line)}
+.patch td{padding:7px 10px;border-top:1px solid var(--line);vertical-align:top}
+.patch tbody tr:nth-child(even){background:var(--row)}
+.patch td.n{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.patch td.fid{font-weight:600}
+.patch tr.grp td{background:var(--bg);font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:13px;color:var(--accent);padding:5px 10px}
+.patch mark{background:var(--hl);color:inherit;border-radius:2px}
+.uni{display:inline-block;min-width:26px;text-align:center;padding:0 5px;border-radius:4px;background:var(--bg);border:1px solid var(--line);margin-right:4px}
+.empty{padding:16px;color:var(--muted)}
+
+/* drawings */
+.drawings{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+figure{margin:0;display:grid;gap:6px;min-width:0}
+figure a{display:block;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px;cursor:zoom-in}
+figure img{display:block;width:100%;height:auto}
+figcaption{font-size:14px;color:var(--muted)}
+figcaption b{color:var(--ink);font-weight:600}
+
+.srcs{display:grid;gap:6px;font-size:15px;padding-left:18px;margin:0}
+.srcs .d{font-family:var(--mono);font-size:12px;color:var(--muted);margin-left:6px}
+
+.lightbox{position:fixed;inset:0;z-index:20;background:rgba(8,10,13,.88);display:grid;place-items:center;padding:calc(env(safe-area-inset-top,0px) + 48px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px))}
+.lightbox[hidden]{display:none}
+.lightbox .inner{background:#fff;border-radius:6px;max-width:100%;max-height:100%;overflow:auto}
+.lightbox img{display:block;max-width:none;width:min(2200px,180vw)}
+.lightbox button{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:max(16px,env(safe-area-inset-right,0px));font:600 15px var(--body);padding:6px 12px;border-radius:6px;border:0;background:#fff;color:#151a21;cursor:pointer}
+.foot{color:var(--muted);font-size:14px;max-width:80ch}
+
+/* redrawn plan + 3D */
+:root{--t-spot:#e0553a;--t-wash:#2f86d6;--t-par:#1f9d68;--t-fres:#8b5cf6;--t-prof:#c98a00;--t-blind:#d4489a;--t-strobe:#64748b;--t-haze:#7c8a99;--t-proj:#0d9488;--t-mate:#0ea5e9;--t-batten:#b45309;
+  --deck:#e6ebf0;--deck-edge:#9aa6b2;--truss:#6b7682;--grid:#e3e8ed}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--deck:#232b35;--deck-edge:#5d6976;--truss:#8b97a3;--grid:#1f262e}}
+:root[data-theme="dark"]{--deck:#232b35;--deck-edge:#5d6976;--truss:#8b97a3;--grid:#1f262e}
+.viz{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.viz{grid-template-columns:minmax(0,1fr)}}
+.plan,.three{background:var(--panel);border:1px solid var(--line);border-radius:8px;min-width:0}
+.plan .scroll{overflow-x:auto}
+.plan svg{display:block;width:100%;min-width:540px;height:auto}
+.vhd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--display);font-weight:600;font-size:15px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.vhd .btns{display:flex;gap:4px}
+.vhd .btns button{font:600 13px var(--body);letter-spacing:0;text-transform:none;padding:3px 9px;border-radius:5px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.vhd .btns button:hover,.vhd .btns button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.stage3d{position:relative;height:380px;touch-action:none;cursor:grab;overflow:hidden;border-radius:0 0 8px 8px}
+.stage3d:active{cursor:grabbing}
+.stage3d canvas{display:block;width:100%!important;height:100%!important}
+.tip{position:absolute;pointer-events:none;background:var(--tape);color:#eef2f5;font-size:12px;line-height:1.35;padding:6px 8px;border-radius:5px;white-space:nowrap;transform:translate(-50%,calc(-100% - 12px))}
+.tip b{font-family:var(--mono);font-weight:500}
+.hint{position:absolute;left:10px;bottom:8px;font-size:12px;color:var(--muted);pointer-events:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend svg{width:20px;height:16px}
+.vnote{font-size:13px;color:var(--muted);max-width:90ch;margin:0}
+.pl-grid{stroke:var(--grid);stroke-width:1}
+.pl-deck{fill:var(--deck);stroke:var(--deck-edge);stroke-width:1.5}
+.pl-wall{fill:var(--deck-edge)}
+.pl-cl{stroke:var(--deck-edge);stroke-width:1;stroke-dasharray:10 4 2 4}
+.pl-bar{fill:url(#truss);stroke:var(--truss);stroke-width:1.2}
+.pl-seg{stroke:var(--truss);stroke-width:9;stroke-linecap:round;opacity:.55}
+.pl-lab{fill:var(--ink);font:600 15px var(--display);letter-spacing:.05em}
+.pl-dim{fill:var(--muted);font:12px var(--mono)}
+.pl-id{fill:var(--ink);font:500 10.5px var(--mono);text-anchor:middle;paint-order:stroke;stroke:var(--panel);stroke-width:3px}
+.pl-small{fill:var(--muted);font:12px var(--body)}
+.pl-focus{stroke:var(--accent);stroke-width:1.2;stroke-dasharray:5 4;opacity:.75}
+.pl-ftarget{fill:none;stroke:var(--accent);stroke-width:1.5}
+.fx{cursor:pointer}
+.fx .sym{stroke:var(--panel);stroke-width:1.5}
+.fx:hover .ring,.fx.sel .ring{opacity:1}
+.ring{fill:none;stroke:var(--accent);stroke-width:2.5;opacity:0}
+.fx:focus-visible{outline:none}.fx:focus-visible .ring{opacity:1}
+tr.flash td{background:var(--hl)!important;transition:background .3s}
+.plan.is-full,.three.is-full{display:flex;flex-direction:column;border-radius:0;border:0;width:100%;height:100%}
+.is-max{position:fixed;inset:0;z-index:30;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.plan.is-full .scroll{flex:1;min-height:0;overflow:auto}
+.plan.is-full svg{min-width:0;width:100%;height:100%}
+.three.is-full .stage3d{flex:1;height:auto;min-height:0;border-radius:0}
+.plan:fullscreen,.three:fullscreen{background:var(--panel)}
+@media (prefers-reduced-motion:no-preference){.tab{transition:background .15s,color .15s}}
+</style>
+
+<header class="mast"><div class="wrap">
+  <h1>Sydney Venue Spec Pack</h1>
+  <p>Lighting plots, patches and production specs for Sydney venues: the Century Venues rooms plus City Recital Hall, the UNSW Roundhouse and Oxford Art Factory. Compiled October 2026 from the venues' own spec PDFs.</p>
+</div></header>
+<nav class="tabs" aria-label="Venues"><div class="wrap" role="tablist" id="tabs"></div></nav>
+<main><div class="wrap" id="view"></div></main>
+<div class="lightbox" id="lb" hidden><button type="button" id="lbClose">Close</button><div class="inner"><img id="lbImg" alt=""></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const S3="https://centurywpproduction.s3.ap-southeast-2.amazonaws.com/wp-content/uploads/sites/";
+
+/* patch row: [fid, fixture, mode, channels, universe, address, location] */
+const ENMORE_PATCH=[
+ ["Moving lights"],
+ [101,"CKC Tourpro Tourist M5","Standard 38ch",38,31,1,"LX5"],[102,"CKC Tourpro Tourist M5","Standard 38ch",38,31,39,"LX5"],[103,"CKC Tourpro Tourist M5","Standard 38ch",38,31,77,"LX5"],[104,"CKC Tourpro Tourist M5","Standard 38ch",38,31,115,"LX5"],[105,"CKC Tourpro Tourist M5","Standard 38ch",38,31,153,"LX5"],[106,"CKC Tourpro Tourist M5","Standard 38ch",38,31,191,"LX5"],
+ [107,"CKC Tourpro Tourist M5","Standard 38ch",38,33,1,"LX4"],[108,"CKC Tourpro Tourist M5","Standard 38ch",38,33,39,"LX4"],[109,"CKC Tourpro Tourist M5","Standard 38ch",38,33,77,"LX4"],[110,"CKC Tourpro Tourist M5","Standard 38ch",38,33,115,"LX4"],[111,"CKC Tourpro Tourist M5","Standard 38ch",38,33,153,"LX4"],[112,"CKC Tourpro Tourist M5","Standard 38ch",38,33,191,"LX4"],
+ [201,"CKC TourPro Aurora V4 Spot","Standard 38ch",38,35,373,"LX3"],[202,"CKC TourPro Aurora V4 Spot","Standard 38ch",38,35,411,"LX3"],[203,"CKC TourPro Aurora V4 Spot","Standard 38ch",38,35,449,"LX3"],
+ [204,"CKC TourPro Aurora V4 Spot","Standard 38ch",38,39,1,"LX1"],[205,"CKC TourPro Aurora V4 Spot","Standard 38ch",38,39,39,"LX1"],[206,"CKC TourPro Aurora V4 Spot","Standard 38ch",38,39,77,"LX1"],[207,"CKC TourPro Aurora V4 Spot","Standard 38ch",38,39,115,"LX1"],[208,"CKC TourPro Aurora V4 Spot","Standard 38ch",38,39,153,"LX1"],
+ [301,"CKC TourPro ZB19 Wash","Standard 21ch",21,31,229,"LX5"],[302,"CKC TourPro ZB19 Wash","Standard 21ch",21,31,250,"LX5"],[303,"CKC TourPro ZB19 Wash","Standard 21ch",21,31,271,"LX5"],[304,"CKC TourPro ZB19 Wash","Standard 21ch",21,31,292,"LX5"],
+ [305,"CKC TourPro ZB19 Wash","Standard 21ch",21,33,229,"LX4"],[306,"CKC TourPro ZB19 Wash","Standard 21ch",21,33,250,"LX4"],[307,"CKC TourPro ZB19 Wash","Standard 21ch",21,33,271,"LX4"],[308,"CKC TourPro ZB19 Wash","Standard 21ch",21,33,292,"LX4"],
+ [309,"CKC TourPro ZB19 Wash","Standard 21ch",21,35,1,"LX3"],[310,"CKC TourPro ZB19 Wash","Standard 21ch",21,35,22,"LX3"],[311,"CKC TourPro ZB19 Wash","Standard 21ch",21,35,43,"LX3"],[312,"CKC TourPro ZB19 Wash","Standard 21ch",21,35,64,"LX3"],
+ [321,"CKC TourPro ZB19 Wash","Standard 21ch",21,37,131,"DSR floor"],[322,"CKC TourPro ZB19 Wash","Standard 21ch",21,37,152,"DSL floor"],
+ ["Strobes, blinders, haze"],
+ [401,"Chauvet Strike Bolt 1C","27ch",27,31,313,"LX5"],[402,"Chauvet Strike Bolt 1C","27ch",27,31,340,"LX5"],[403,"Chauvet Strike Bolt 1C","27ch",27,33,313,"LX4"],[404,"Chauvet Strike Bolt 1C","27ch",27,33,340,"LX4"],
+ [501,"Chauvet Strike Array 2C","16ch",16,35,85,"LX3"],[502,"Chauvet Strike Array 2C","16ch",16,35,101,"LX3"],[503,"Chauvet Strike Array 2C","16ch",16,37,1,"LX2"],[504,"Chauvet Strike Array 2C","16ch",16,37,17,"LX2"],
+ [601,"Antari F-1 Fazer","2ch",2,51,511,"USR floor"],
+ ["Generic LED (Ovation Reve)"],
+ [1,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,1,"FOH Bridge: USL focus. Not refocusable."],[2,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,15,"FOH Bridge: SL wing focus. Not refocusable."],[3,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,29,"FOH Bridge: SL focus. Not refocusable."],[4,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,43,"FOH Bridge: CSL focus. Not refocusable."],
+ [5,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,57,"FOH Bridge: CSR focus. Not refocusable."],[6,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,71,"FOH Bridge: SR focus. Not refocusable."],[7,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,85,"FOH Bridge: SR wing focus. Not refocusable."],[8,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,99,"FOH Bridge: USR focus. Not refocusable."],
+ [11,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,113,"FOH Bridge: variable focus"],[12,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,127,"FOH Bridge: variable focus"],[13,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,141,"FOH Bridge: variable focus"],[14,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,155,"FOH Bridge: variable focus"],[15,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,169,"FOH Bridge: variable focus"],[16,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,41,183,"FOH Bridge: variable focus"],
+ [21,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,37,75,"LX2: variable focus, bounce only"],[22,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,37,89,"LX2: variable focus, bounce only"],[23,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,37,103,"LX2: variable focus, bounce only"],[24,"Chauvet Ovation Reve E-3 IP Profile","14ch",14,37,117,"LX2: variable focus, bounce only"],
+ [31,"Chauvet Ovation Reve F-3 IP Fresnel","14ch",14,35,117,"LX3: high side wash. Not refocusable."],[32,"Chauvet Ovation Reve F-3 IP Fresnel","14ch",14,35,131,"LX3: rear top wash. Not refocusable."],[33,"Chauvet Ovation Reve F-3 IP Fresnel","14ch",14,35,145,"LX3: rear top wash. Not refocusable."],[34,"Chauvet Ovation Reve F-3 IP Fresnel","14ch",14,35,159,"LX3: high side wash. Not refocusable."],
+ [41,"Chauvet Ovation Reve F-3 IP Fresnel","14ch",14,33,367,"LX4: high side wash. Not refocusable."],[42,"Chauvet Ovation Reve F-3 IP Fresnel","14ch",14,33,381,"LX4: high side wash. Not refocusable."],
+ [51,"Chauvet Ovation Reve F-3 IP Fresnel","14ch",14,37,33,"LX2: front top wash. Not refocusable."],[52,"Chauvet Ovation Reve F-3 IP Fresnel","14ch",14,37,47,"LX2: front top wash. Not refocusable."],[53,"Chauvet Ovation Reve F-3 IP Fresnel","14ch",14,37,61,"LX2: front top wash. Not refocusable."]
+];
+
+const METRO_PATCH=[
+ ["Conventionals on dimmers"],
+ [1,"1.2k Fresnel (dimmer)","1ch",1,1,1,"FOH SR"],[2,"1.2k Fresnel (dimmer)","1ch",1,1,2,"FOH SL"],
+ [11,"ETC Source4 Profile (dimmer)","1ch",1,1,3,"FOH"],[12,"ETC Source4 Profile (dimmer)","1ch",1,1,4,"FOH"],[13,"ETC Source4 Profile (dimmer)","1ch",1,1,5,"FOH"],[14,"ETC Source4 Profile (dimmer)","1ch",1,1,6,"FOH"],[15,"ETC Source4 Profile (dimmer)","1ch",1,1,7,"DSC"],
+ ["Blinders"],
+ [51,"Acme Stage Blinder IP","2ch",2,1,451,"US"],[52,"Acme Stage Blinder IP","2ch",2,1,457,"MS"],[53,"Acme Stage Blinder IP","2ch",2,1,463,"FOH"],[54,"Acme Stage Blinder IP","2ch",2,1,469,"US"],[55,"Acme Stage Blinder IP","2ch",2,1,475,"MS"],[56,"Acme Stage Blinder IP","2ch",2,1,481,"FOH"],
+ ["LED pars"],
+ [101,"Acme Stage Par 100 Colour IP","6ch",6,1,25,"DS side fill"],[102,"Acme Stage Par 100 Colour IP","6ch",6,1,31,"DS side fill"],[103,"Acme Stage Par 100 Colour IP","6ch",6,1,37,"DS side fill"],[104,"Acme Stage Par 100 Colour IP","6ch",6,1,43,"DS side fill"],
+ ...Array.from({length:24},(_,i)=>[201+i,"Acme Stage Par 100 Colour IP","6ch",6,1,51+i*6,i<12?"MS LED can":"US LED can"]),
+ ["Moving lights"],
+ ...Array.from({length:10},(_,i)=>[401+i,"Acme XA400 Energy Spot Pro","Mode 1 25ch",25,1,201+i*25,i<6?"MS":"US"]),
+ ["Strobes"],
+ [601,"Acme Ginamp Strobe 2","36ch",36,2,1,"US LED truss"],[602,"Acme Ginamp Strobe 2","36ch",36,2,37,"US LED truss"],[603,"Acme Ginamp Strobe 2","36ch",36,2,73,"US LED truss"],[604,"Acme Ginamp Strobe 2","36ch",36,2,109,"US LED truss"],
+ [605,"Acme Ginamp Strobe 2","36ch",36,2,145,"DS floor"],[606,"Acme Ginamp Strobe 2","36ch",36,2,181,"US floor"],[607,"Acme Ginamp Strobe 2","36ch",36,2,217,"US floor"],[608,"Acme Ginamp Strobe 2","36ch",36,2,253,"DS floor"]
+];
+
+const SOCIAL_PATCH=[
+ ["Moving lights"],
+ [101,"Acme Oxygen","Mode 1",17,1,13,"A-frame truss"],[102,"Acme Oxygen","Mode 1",17,1,30,"A-frame truss. Printed as 1.3 on the sheet; 1.30 by the 17ch spacing."],[103,"Acme Oxygen","Mode 1",17,1,47,"A-frame truss"],[104,"Acme Oxygen","Mode 1",17,1,64,"A-frame truss"],[105,"Acme Oxygen","Mode 1",17,1,81,"A-frame truss"],[106,"Acme Oxygen","Mode 1",17,1,98,"A-frame truss"],
+ ["LED"],
+ ...Array.from({length:12},(_,i)=>[201+i,"ProPar 12x12","8ch",8,1,115+i*8,"A-frame truss"]),
+ [301,"Acme Stage Blinder IP","6ch",6,1,279,"Front truss"],[302,"Acme Stage Blinder IP","6ch",6,1,285,"Front truss"],[303,"Acme Stage Blinder IP","6ch",6,1,291,"Front truss"],[304,"Acme Stage Blinder IP","6ch",6,1,297,"Front truss"],
+ [401,"Acme Stage Par 100 Colour IP","6ch",6,1,267,"A-frame corners"],[402,"Acme Stage Par 100 Colour IP","6ch",6,1,273,"A-frame corners"],
+ ...Array.from({length:7},(_,i)=>[501+i,"LED Truss Mate","8ch",8,1,211+i*8,"Truss ends and corners"]),
+ [601,"Acme Ginamp","18ch",18,1,401,"A-frame truss"],[602,"Acme Ginamp","18ch",18,1,419,"A-frame truss"],
+ [901,"Frezno 150 HEX","TR16",16,1,303,"Back truss"],[902,"Frezno 150 HEX","TR16",16,1,311,"Back truss"],[903,"Frezno 150 HEX","TR16",16,1,379,"Back truss"]
+];
+
+const FACTORY_PATCH=[
+ ["Flown FOH"],
+ [11,"LED eProfile HP","2 Channel",2,1,73,"B Profile 1 \u00b7 FOH bar"],
+ [12,"LED eProfile HP","2 Channel",2,1,75,"B Profile 2 \u00b7 FOH bar"],
+ [13,"LED eProfile HP","2 Channel",2,1,77,"B Profile 3 \u00b7 FOH bar"],
+ [14,"LED eProfile HP","2 Channel",2,1,79,"B Profile 4 \u00b7 FOH bar"],
+ [15,"EVE F-50Z","3 channel",3,1,451,"W Profile 1 \u00b7 FOH bar"],
+ [16,"EVE F-50Z","3 channel",3,1,454,"W Profile 2 \u00b7 FOH bar"],
+ [17,"EVE F-50Z","3 channel",3,1,457,"W Profile 3 \u00b7 FOH bar"],
+ [18,"EVE F-50Z","3 channel",3,1,460,"W Profile 4 \u00b7 FOH bar"],
+ [101,"Frezno 150 TW STD P","STD P",8,1,1,"Fresnel 1 \u00b7 FOH bar"],
+ [102,"Frezno 150 TW STD P","STD P",8,1,9,"Fresnel 2 \u00b7 FOH bar"],
+ [103,"Frezno 150 TW STD P","STD P",8,1,17,"Fresnel 3 \u00b7 FOH bar"],
+ [104,"Frezno 150 TW STD P","STD P",8,1,25,"Fresnel 4 \u00b7 FOH bar"],
+ [105,"Frezno 150 HEX TR16","TR16",20,1,33,"Clr Fresnel 1 \u00b7 FOH bar"],
+ [106,"Frezno 150 HEX TR16","TR16",20,1,53,"Clr Fresnel 2 \u00b7 FOH bar"],
+ [107,"Frezno 150 HEX TR16","TR16",20,2,301,"Clr Fresnel 3 \u00b7 FOH bar"],
+ ["Flown stage"],
+ [301,"Stage Par 100 Colour IP","6 channel",6,1,101,"Parcan 1 \u00b7 LX3"],
+ [302,"Stage Par 100 Colour IP","6 channel",6,1,107,"Parcan 2 \u00b7 LX3"],
+ [303,"Stage Par 100 Colour IP","6 channel",6,1,113,"Parcan 3 \u00b7 LX3"],
+ [304,"Stage Par 100 Colour IP","6 channel",6,1,119,"Parcan 4 \u00b7 LX3"],
+ [305,"Stage Par 100 Colour IP","6 channel",6,1,125,"Parcan 5 \u00b7 LX3"],
+ [306,"Stage Par 100 Colour IP","6 channel",6,1,131,"Parcan 6 \u00b7 LX3"],
+ [307,"Stage Par 100 Colour IP","6 channel",6,1,137,"Parcan 7 \u00b7 LX3"],
+ [308,"Stage Par 100 Colour IP","6 channel",6,1,143,"Parcan 8 \u00b7 LX3"],
+ [309,"Stage Par 100 Colour IP","6 channel",6,1,149,"Parcan 9 \u00b7 LX1"],
+ [310,"Stage Par 100 Colour IP","6 channel",6,1,155,"Parcan 10 \u00b7 LX1"],
+ [311,"Stage Par 100 Colour IP","6 channel",6,1,161,"Parcan 11 \u00b7 LX1"],
+ [312,"Stage Par 100 Colour IP","6 channel",6,1,167,"Parcan 12 \u00b7 LX1"],
+ [313,"Stage Par 100 Colour IP","6 channel",6,1,173,"Parcan 13 \u00b7 LX1"],
+ [314,"Stage Par 100 Colour IP","6 channel",6,1,179,"Parcan 14 \u00b7 LX1"],
+ [315,"Stage Par 100 Colour IP","6 channel",6,1,185,"Parcan 15 \u00b7 LX1"],
+ [316,"Stage Par 100 Colour IP","6 channel",6,1,191,"Parcan 16 \u00b7 LX1"],
+ [317,"Stage Par 100 Colour IP","6 channel",6,1,197,"Parcan 17 \u00b7 LX1"],
+ [318,"Stage Par 100 Colour IP","6 channel",6,1,203,"Parcan 18 \u00b7 LX1"],
+ [319,"Stage Par 100 Colour IP","6 channel",6,1,209,"Parcan 19 \u00b7 LX1"],
+ [320,"Stage Par 100 Colour IP","6 channel",6,1,215,"Parcan 20 \u00b7 LX1"],
+ ["Fixture layer"],
+ [420,"F-3 Fazer","Mode 0",2,1,511,"F-1Faz1 1 \u00b7 Floor USR"],
+ [601,"Stage Par 100 Colour IP","6 channel",6,1,225,"Side Fill"],
+ [602,"Stage Par 100 Colour IP","6 channel",6,1,231,"Side Fill"],
+ [603,"Stage Par 100 Colour IP","6 channel",6,1,237,"Side Fill"],
+ [604,"Stage Par 100 Colour IP","6 channel",6,1,243,"Side Fill"],
+ [701,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)","Mode 3 25 DMX",25,1,251,"Acme Spot \u00b7 LX2"],
+ [702,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)","Mode 3 25 DMX",25,1,276,"Acme Spot \u00b7 LX2"],
+ [703,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)","Mode 3 25 DMX",25,1,301,"Acme Spot \u00b7 LX2"],
+ [704,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)","Mode 3 25 DMX",25,1,326,"Acme Spot \u00b7 LX2"],
+ [705,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)","Mode 3 25 DMX",25,1,351,"Acme Spot \u00b7 LX2"],
+ [706,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)","Mode 3 25 DMX",25,1,376,"Acme Spot \u00b7 LX2"],
+ [1011,"ACME GINAMP (STROBE 2)INT","Mode 4 36DMX",36,2,1,"STROBE 1 \u00b7 LX1"],
+ [1012,"ACME GINAMP (STROBE 2)INT","Mode 4 36DMX",36,2,37,"STROBE 2 \u00b7 LX3"],
+ [1013,"ACME GINAMP (STROBE 2)INT","Mode 4 36DMX",36,2,73,"STROBE 3 \u00b7 LX2"],
+ [1014,"ACME GINAMP (STROBE 2)INT","Mode 4 36DMX",36,2,109,"STROBE 4 \u00b7 LX2"],
+ [1015,"ACME GINAMP (STROBE 2)INT","Mode 4 36DMX",36,2,217,"STROBE 5 \u00b7 LX3"],
+ [1016,"ACME GINAMP (STROBE 2)INT","Mode 4 36DMX",36,2,145,"STROBE 6 \u00b7 LX1"],
+ [1101,"Stage Blinder IP","2 channel",2,1,401,"blind \u00b7 FOH bar"],
+ [1102,"Stage Blinder IP","2 channel",2,1,407,"blind \u00b7 FOH bar"],
+ [1103,"Stage Blinder IP","2 channel",2,1,413,"blind \u00b7 LX2"],
+ [1104,"Stage Blinder IP","2 channel",2,1,419,"blind \u00b7 LX2"]
+];
+
+const VENUES=[
+{ id:"factory", tab:"Factory", name:"The Factory Theatre", addr:"105 Victoria Road, Marrickville NSW",
+  chips:[["ok","Spec: April 2026"],["ok","Plot: April 2026"],["ok","Patch: MA3 show, 26 Oct 2026"]],
+  note:"<strong>Patch comes from your MA3 show</strong> (exported 26 October 2026 with the Venue Patch Export plugin), not from a venue sheet. It uses your fixture IDs, so the plan is renumbered to match. Confirm it against the house rig with Century production before the show.",
+  stats:[["18.4 m","Floor width"],["8 \u00d7 6 m","Stage W \u00d7 D"],["1.13 m","Stage height"],["4.5 m","Floor to ceiling"],["16 m","DSE to mix"],["2 \u00d7 32 A","3-phase for lighting"]],
+  rig:{title:"House rig",src:"Factory spec, April 2026",
+    groups:[["Control",["grandMA3 onPC + Command Wing","Obsidian EP4 node, 2 universes free for touring","MA2 show files are not compatible"]],
+            ["Fixtures",[["20","Acme Stage Par Colour IP"],["6","Acme Energy Spot Pro 400"],["6","Acme Ginamp"],["4","Acme Stage Blinder IP"],["6","Fresnel"],["4","EK Profile"]]],
+            ["Video",["5.5 \u00d7 2.5 m LED screen on the US truss, 2.9 mm pitch","HDMI input at SR or FOH"]]]},
+  patch:{rows:FACTORY_PATCH,title:"Patch (MA3 show export)",src:"grandMA3 onPC 2.5.1, Venue Patch Export, 26 October 2026"},
+  drawings:[["img/factory-plot-2026.png","Lighting plot, April 2026","Current rig with fixture IDs. No addresses on this sheet."],["img/factory-plot-2023.png","Lighting plot, April 2023","Matches the 2023 patch below."]],
+  info:[["Stage",[["DSE to rear of stage","6 m"],["Stage width","8 m"],["Stage height","1.13 m"],["Surface","Timber, painted black"],["Drum riser","2.4 \u00d7 2.4 m Megadeck @ 300 mm"],["Fittings","Black upstage curtain"]]],
+        ["Room and power",[["DSE to mix position","16 m"],["Floor width","18.4 m"],["Floor to ceiling","4.5 m"],["Lighting power","2 \u00d7 32 A 3-phase"],["Audio power","2 \u00d7 32 A 3-phase"],["Barricade","Not standard; request it"]]],
+        ["Audio",[["PA","12 \u00d7 NEXO GEO S1210 flown, 4 \u00d7 RS15 sub"],["Amps / processing","4 \u00d7 Camco Vortex 6, 3 \u00d7 NX242"],["FOH","dLive S5000 + DM48, Waves and Dante cards"],["Monitors","dLive S3000 + DM48"],["Wedges","9 \u00d7 Wayloud, 5 sends plus drumfill"],["Multicore","48 ch, dedicated CAT runs for touring desks"]]],
+        ["Load in",[["Access","Through the courtyard main gates"],["Stairs","30 stairs from courtyard to stage"],["Lift","Available; liaise with BOH manager"],["Dressing room","1 \u00d7 7.6 \u00d7 2.8 m plus kitchenette"]]]],
+  rooms:[
+    {name:"Fusebox",src:"Fusebox spec, September 2025",stats:[["250 / 140","Standing / seated"],["5.2 \u00d7 5.2 m","Stage"],["2.9 m","Stage to ceiling"],["10.2 m","DSE to mix"]],
+     lists:[["Lighting",["LX1 (FOH): 7 \u00d7 Par Can, 2 \u00d7 Stage Par Colour 100","LX2 (mid): 4 \u00d7 Pro-Par 12x12 RGBWAUV, 2 \u00d7 2-lite blinder","LX3 (US): 4 \u00d7 Pro-Par 12x12 RGBWAUV","Control: grandMA3 onPC + fader wing"]],["Audio",["2 \u00d7 EV 3-way, 2 \u00d7 EV 2\u00d718\" sub, EV P2000 amps","Midas M32 + DL32","4 \u00d7 RCF ART 912-A wedges"]],["Power",["No 3-phase as standard. 1 \u00d7 32 A install on request (charged)."]]]},
+    {name:"Factory Floor",src:"Floor spec, September 2025",stats:[["250 / 140","Standing / seated"],["4.8 \u00d7 4.8 m","Stage"],["3.8 m","Stage to ceiling"],["10.8 m","DSE to mix"]],
+     lists:[["Lighting",["Control: grandMA3 onPC + fader wing","No fixture list is published for this room"]],["Audio",["2 \u00d7 EVX 3-way, 2 \u00d7 EV 2\u00d718\" sub, InterM P3200 amps","Midas M32R + DL32","4 \u00d7 RCF ART 912-A wedges, mixed from FOH"]],["Stage",["Black stage curtains, 3.0 \u00d7 2.0 m screen","No 3-phase as standard. 1 \u00d7 32 A install on request."]]]},
+    {name:"Courtyard",src:"Courtyard spec, July 2026",stats:[["500\u20131,200 / 250","Standing / seated"],["3.6 \u00d7 4.8 m","Stage"],["2.5\u20133 m","Stage to ceiling"],["7 m","DSE to mix"]],
+     lists:[["Lighting",["Control: Eurolight LC2412","Front wash: 2 \u00d7 Par 64 amber, 2 \u00d7 Par 56 pink, 2 \u00d7 Par 56 open, 1 \u00d7 LED scrolling wash","Stage wash: 5 \u00d7 LED scrolling wash, 1 \u00d7 Par 64 drum focus","Festoon lighting"]],["Audio",["2 \u00d7 EVX 3-way, 2 \u00d7 EV MTL-2, 2 \u00d7 EV MTL-4","Midas M32R + DL32","4 \u00d7 1502 passive wedges"]],["Backline",["Gretsch Catalina Jazz kit, DW3000 hardware","2 \u00d7 Fender Hot Rod Deluxe, Bassman 800 + 410 Neo","2 \u00d7 CDJ-NXS2 + DJM-NXS2"]]]}],
+  sources:[["Factory Theatre spec, April 2026","10/2026/05/28223559/THE-FACTORY-PRODUCTION-SPECS-APRIL-2026.pdf","PDF, 6 pp"],["Fusebox spec, September 2025","10/2026/09/16024404/THE-FUSEBOX-TECH-SPEC-SEP-2025.pdf","PDF"],["Factory Floor spec, September 2025","10/2026/09/16024640/THE-FACTORY-FLOOR-TECH-SPEC-SEP-2025.pdf","PDF"],["Courtyard spec and backline, July 2026","10/2026/09/16024144/THE-FACTORY-COURTYARD-PROD-AND-BACKLINE-SPEC-July-2026.pdf","PDF"],["Factory Theatre spec, April 2023 (patch)","10/2021/12/18213827/Factory-Theatre_Production-Specs_April-2023-1-1.pdf","PDF, 7 pp"]]},
+
+{ id:"enmore", tab:"Enmore", name:"The Enmore Theatre", addr:"118\u2013132 Enmore Road, Newtown NSW",
+  chips:[["ok","Spec: January 2026"],["ok","Patch: September 2026"],["ok","Plot: September 2026"]],
+  note:"<strong>Plot and patch are both September 2026.</strong> The plot places Reve E profiles 21\u201324 on LX3 and Reve F fresnels 31\u201334 on LX2, where the patch's location notes say LX2 and LX3. The plan follows the plot. Confirm with production before focusing.",
+  stats:[["2,500","Concert capacity"],["1,630","Theatre capacity"],["9.6 \u00d7 6.4 m","Proscenium W \u00d7 H"],["12.6 m","DSE to rear wall"],["25 m","DSE to mix"],["400 A","Powerlock, USP"]],
+  rig:{title:"House lighting packages",src:"Enmore spec, January 2026",
+    groups:[["Full package, $3,425 + GST",[["12","CKC Tour Pro Aurora V6 Profile"],["12","CKC Tour Pro ZB19 Wash"],["6","CKC Tour Pro Aurora V4 Profile"],["4","Chauvet Strike Array 2C"],["4","Chauvet Strike Bolt 1C"],["1","grandMA3 console"],["","Front truss generic wash and profiles"]]],
+            ["Half package, $2,600 + GST",["Any 12 heads from the V6 profiles and ZB19 washes","Plus 6 \u00d7 V4, 4 \u00d7 Strike Array 2C, 4 \u00d7 Strike Bolt 1C, grandMA3, front truss generics"]],
+            ["Extras",["House LED auditorium lights, DMX: $1,000 + GST","Hazer: $130 + GST","Truss and motors only (no lighting): $1,000 + GST","Extra stock: 6 \u00d7 ACME Ozone, 6 \u00d7 V6, 6 \u00d7 ZB19, 6 \u00d7 Strike Array, 6 \u00d7 Strike Bolt","Up to 4 followspots in the gantry, 4 hr minimum call"]]]},
+  patch:{rows:ENMORE_PATCH,title:"Patch (September 2026)",src:"Enmore Theatre Lighting Patch, September 2026"},
+  drawings:[["img/enmore-plot-2026.png","Lighting plot, September 2026","Every fixture ID, LX1 to LX5, the FOH bridge and floor positions."],["img/enmore-plot-2025.png","Lighting plot, July 2025","The previous plot, with older fixture types."],["img/enmore-network.png","DMX node layout","EN12 at FOH, NS-8 nodes in the dimmer room, EP2 on each bar."]],
+  network:[["Console","192.168.1.1"],["FOH EN12","192.168.97.85"],["Dimmer room, 2 \u00d7 NS-8","192.168.1.11, .12"],["LX1 EP2","192.168.1.21"],["LX2 EP2","192.168.1.22"],["LX3 EP2","192.168.1.23"],["LX4 EP2","192.168.1.24"],["LX5 EP2","192.168.1.25"],["LED truss and motor EP2","192.168.1.26"],["Followspot EP2","192.168.1.27"],["Stage floor EN4","192.168.1.51"],["Spares","ES8 .3, EP2 .32 and .33, EN4 .52"]],
+  info:[["Stage",[["Proscenium width","9.6 m"],["Proscenium height","6.4 m (6.0 m at sides)"],["DSE to proscenium","4.4 m"],["DSE to rear wall","12.6 m"],["Stage width","12 m"],["Rake","125 mm over 12.5 m"],["Surface","Timber, charcoal masonite"]]],
+        ["Trusses and flys",[["Front truss","0.7 m from DSE, 12 m, 2 \u00d7 1 t, 700 kg"],["Mid truss","5.7 m from DSE, 10.5 m, 2 \u00d7 1 t, 700 kg"],["Back truss","9.5 m from DSE, 10.5 m, 2 \u00d7 1 t, 700 kg"],["Fly system","18 counterweight lines, 12.5 m to grid"],["Battens","About 9 m, 80 kg, soft goods only"],["Cyc","White calico, 5.68 m drop \u00d7 8 m"]]],
+        ["Power",[["Lighting","400 A Powerlock, upstage prompt side"],["Dimmers on OP","Needs a 25 m Powerlock extension"],["Also","3 \u00d7 3-phase behind the pros wall PS: 50, 32, 25 A"],["Audio","100 A hardwire, downstage OP, 4 m tails"],["Audio extra","2 \u00d7 32 A, downstage OP"]]],
+        ["Audio",[["PA","18 \u00d7 L-Acoustics V-Dosc, 12 \u00d7 SB218"],["Front fill","6 \u00d7 dV-Dosc"],["FOH","dLive 7000 + DM64/32"],["Monitors","dLive 5000 + DM64/32 + DX168"],["Wedges","12 \u00d7 NEXO PS15, 8 mixes incl. cue"],["Split","60 ch Burndy analogue split"]]],
+        ["Load in",[["Door","2,500 H \u00d7 1,370 W mm, Enmore Road"],["Dock to stage","35 m"],["Clearway","3 pm to 7 pm weekdays"],["Dressing rooms","6, across three floors"]]]],
+  sources:[["Enmore lighting plot, September 2026 (Word file)","2/2026/09/26033459/ENMORE-September-2026-LX-Plot-copy.docx","DOCX"],["Enmore lighting patch, September 2026","2/2026/09/26032754/Enmore-Theatre-Patch-September-2026.pdf","PDF, 2 pp"],["Enmore lighting package and plot, July 2025","2/2025/08/28031506/Enmore-Theatre-Lighting-Package-July-2025-V2.pdf","PDF, 4 pp"],["DMX node gateway upgrade with IP addresses","2/2026/09/26032758/ENMORE-DMX-GATEWAY-NODE-UPGRADE-2025-with-IP-addresses-V1.pdf","PDF, 1 p"],["Enmore production spec, January 2026","2/2026/09/16021716/ENMORE-Production-Specs-January-2026.pdf","PDF, 9 pp"],["Enmore comedy and spoken word spec, April 2026","2/2026/09/16021807/ENMORE-Comedy-Spoken-Word-Specs-April-2026.pdf","PDF, 9 pp"]]},
+
+{ id:"metro", tab:"Metro", name:"The Metro Theatre", addr:"624 George Street, Sydney NSW 2000",
+  chips:[["ok","Spec: October 2026"],["ok","Patch: September 2026"],["warn","Plot: June 2024"]],
+  note:"<strong>No current plot.</strong> The 2026 specs say the plot is on the following page, but neither file includes one. The June 2024 drawings below use the same fixture types as the 2026 patch; they have no fixture IDs, so match them using the patch's location notes.",
+  stats:[["1,200","Concert capacity"],["550","Theatre capacity"],["10.1 \u00d7 6 m","Stage W \u00d7 D"],["970 mm","Stage height"],["4.6 m","Stage to ceiling"],["12.8 m","DSE to mix"]],
+  rig:{title:"House rig",src:"Metro spec, October 2026",
+    groups:[["Control",["grandMA3 Compact XT","12 ch Jands FP12 dimmer","Jands DD6-2 data splitter"]],
+            ["Fixtures",[["10","ACME XA400 Energy Spot Pro"],["24","ACME Stage Par 100 Colour"],["8","Acme Ginamp"],["6","Acme Stage Blinder"],["4","ACME RGBW Stage Par Colour"],["5","ETC Source4 Profile"],["2","Selecon 1K wash"]]],
+            ["On request",["Acme Ozone, Atomic strobes, Duet / 4-way blinders","Hazer, dry ice, 1.2K Explorer followspot","Upright truss and baseplates"]],
+            ["Video",["5.5 \u00d7 2.5 m LED screen on the US truss","1848 \u00d7 840 px, HDMI at SR or FOH"]]]},
+  patch:{rows:METRO_PATCH,title:"Patch (September 2026)",src:"Metro Theatre Lighting Patch, September 2026"},
+  drawings:[["img/metro-plot-bars.png","Lighting plot by bar, June 2024","Each bar drawn separately, with the legend."],["img/metro-plot-overview.png","Lighting plot overview, June 2024","Whole rig in plan with the floor positions."]],
+  info:[["Stage",[["Stage width","10.1 m"],["Height from floor","970 mm"],["Stage to ceiling","4.6 m"],["DSE to rear wall","6 m"],["Surface","Timber, carpeted, flat"],["Fittings","2 \u00d7 black legs, upstage black smother"]]],
+        ["Trusses and power",[["FOH truss","Tri truss over the dancefloor, 2 \u00d7 500 kg, 3.5 m from DSE"],["Upstage truss","Tri truss, 9 m wide, 2\u20133 \u00d7 500 kg, 6 m from DSE"],["Lighting power","4 \u00d7 32 A 3-phase SR, 2 used by the house rig"],["Audio power","2 \u00d7 32 A SL, 1 \u00d7 32 A SR"]]],
+        ["Audio",[["PA","8 \u00d7 V-Dosc, 8 \u00d7 SB218"],["Fills","4 \u00d7 NEXO Alpha M3, 2 \u00d7 Alpha B1"],["FOH","dLive S5000, 64/32 IO, Waves and Dante"],["Monitors","dLive S3000, 64/32 IO"],["Wedges","9 \u00d7 Wayloud, 2 \u00d7 EVX, 6 mixes plus drum and cue"],["Multicore","60 ch with 2-way split"]]],
+        ["Load in",[["Dock","Central Lane, 3.6 m clearance, 5.5 \u00d7 10 m"],["Door","2,000 H \u00d7 1,480 W mm"],["To stage","7 m to the stairs, then 29 stairs"],["Rooms","2 dressing rooms and a production office, SR"]]]],
+  sources:[["Metro Theatre lighting patch, September 2026","12/2026/09/16030424/Metro-Theatre-Patch-September-2026.pdf","PDF, 2 pp"],["Metro Theatre spec, October 2026","12/2026/09/25015255/THE-METRO-THEATRE-OCTOBER-2026-2.pdf","PDF, 7 pp"],["Metro Theatre spec, June 2024 (plot)","12/2024/08/14215915/METRO-THEATRE-TECH-SPEC-JUNE-2024-9.pdf","PDF, 10 pp"]]},
+
+{ id:"social", tab:"Metro Social", name:"Metro Social", addr:"624 George Street, Sydney NSW 2000",
+  chips:[["ok","Plot and patch: August 2026"]],
+  stats:[["1","DMX universe"],["36","Fixtures"],["12","Dimmer channels"],["3","Truss runs"]],
+  rig:{title:"House rig",src:"Metro Social inventory, August 2025 and plot, August 2026",
+    groups:[["Control",["grandMA3 onPC + fader wing","12 dimmer channels (IDs 1\u201312)"]],
+            ["Fixtures",[["6","Acme Oxygen"],["12","ProPar 12x12"],["4","Acme Stage Blinder IP"],["2","Acme Stage Par 100 Colour IP"],["7","LED Truss Mate"],["2","Acme Ginamp"],["3","Frezno 150 HEX"]]],
+            ["Audio and DJ",["dLive C1500 with CDM32","2 \u00d7 CDJ-2000NXS2, DJM-900NXS2, 1.8 \u00d7 0.6 m DJ deck","4 \u00d7 RCF ART 912-A wedges"]]]},
+  patch:{rows:SOCIAL_PATCH,title:"Patch (August 2026)",src:"Metro Social plot and patch, August 2026"},
+  drawings:[["img/social-plot.png","Plot and patch, August 2026","A-frame truss over the front truss, with the back truss behind."]],
+  sources:[["Metro Social plot and patch, August 2026","12/2026/09/16022824/Metro-Social-Plot-Patch-August-2026-compressed.pdf","PDF, 1 p"],["Metro Social DJ production spec","12/2025/11/22035605/Metro-Social-Production-Spec-DJ-1-2.pdf","PDF, 2 pp"]]}
+];
+
+/* ---------- rig geometry ----------
+   Plan coordinates in metres: x across the stage (negative = stage right, drawn on the left as seen from the house),
+   y upstage from the downstage edge (DSE), z height above the stage deck.
+   planY lets a far-off position (the Enmore FOH bridge) sit closer on the 2D plan. */
+const TYPES={spot:"Moving spot / profile",wash:"Moving wash",par:"LED par",fres:"Fresnel",prof:"Profile",blind:"Blinder",strobe:"Strobe",haze:"Hazer",proj:"Projector",mate:"LED truss mate",batten:"LED batten"};
+function bar(n,y,z,x0,x1,extra){return Object.assign({n,y,z,x0,x1},extra||{})}
+function on(b,items){return items.map(([id,t,x,dy,name])=>({id,t,x,y:b.y+(dy||0),planY:b.planY!=null?b.planY+(dy||0):undefined,z:b.z,bar:b.n,name}))}
+const at=(id,t,x,y,z,name,pos)=>({id,t,x,y,z,name,pos});
+const seq=(start,n,xs,t,dy,name)=>xs.slice(0,n).map((x,i)=>[start+i,t,x,dy,name]);
+
+const RIGS={};
+(()=>{ /* Enmore: measured off the September 2026 plot (to scale: 12 m trusses = 951 px), downstage edge at the apron front */
+  const FOH=bar("FOH bridge",-12,9,-6.2,6.2,{planY:-1.7,dimNote:"\u224812 m out, est."}),
+        L1=bar("LX1",0.32,7.5,-6,6),L2=bar("LX2",1.04,7.5,-6,6),L3=bar("LX3",5.4,7.5,-6,6),
+        L4=bar("LX4",7.3,8,-5.25,5.25),L5=bar("LX5",10.8,8,-5.25,5.25),LED=bar("LED truss",12.3,8,-4.7,4.7);
+  const M5="CKC Tourist M5",V4="CKC Aurora V4 Spot",ZB="CKC ZB19 Wash",RE="Ovation Reve E-3 profile",RF="Ovation Reve F-3 fresnel",BO="Strike Bolt 1C",AR="Strike Array 2C";
+  RIGS.enmore={stage:{w:12,d:12.6,deck:1.1},pros:{y:6.1,w:9.6,h:6.4},
+    note:"Redrawn from the venue's September 2026 plot, which is drawn to scale and carries every fixture ID, with the September 2026 patch for addresses. Where the plot and the patch's location notes disagree (Reve E 21\u201324 hang on LX3, and Reve F 31\u201334 on LX2), the plot is followed. Dashed lines show the focus labelled in the patch: the FOH bridge's fixed area focuses (1\u20138) and the Reve F washes. Their aim points are stage areas worked out from those labels. Fixtures marked variable focus aren't aimed. Trims and the FOH bridge distance are estimates.",
+    bars:[FOH,L1,L2,L3,L4,L5,LED],
+    fx:[...on(FOH,[[1,"prof",-5.57,0,RE],[11,"prof",-4.83,0,RE],[12,"prof",-4.1,0,RE],[2,"prof",-3.35,0,RE],[3,"prof",-2.09,0,RE],[13,"prof",-1.55,0,RE],[4,"prof",-1.01,0,RE],[5,"prof",0.73,0,RE],[14,"prof",1.32,0,RE],[6,"prof",1.89,0,RE],[7,"prof",3.17,0,RE],[15,"prof",3.91,0,RE],[16,"prof",4.65,0,RE],[8,"prof",5.4,0,RE]]),
+      ...on(L1,[[204,"spot",-4.77,0,V4],[205,"spot",-2.43,0,V4],[206,"spot",0.03,0,V4],[207,"spot",2.33,0,V4],[208,"spot",4.75,0,V4]]),
+      ...on(L2,[[503,"blind",-4.36,-0.2,AR],[504,"blind",4.3,-0.2,AR],[31,"fres",-3.76,0.35,RF],[51,"fres",-2.94,0.35,RF],[32,"fres",-1.26,0.35,RF],[52,"fres",-0.03,0.35,RF],[33,"fres",1.26,0.35,RF],[53,"fres",2.95,0.35,RF],[34,"fres",3.73,0.35,RF]]),
+      ...on(L3,[[201,"spot",-3.66,0.15,V4],[203,"spot",3.67,0.15,V4],[202,"spot",0.03,-0.3,V4],[309,"wash",-5.47,-0.18,ZB],[21,"prof",-4.22,-0.18,RE],[501,"blind",-2.98,-0.18,AR],[310,"wash",-1.83,-0.18,ZB],[22,"prof",-1.4,-0.18,RE],[23,"prof",1.41,-0.18,RE],[311,"wash",1.83,-0.18,ZB],[502,"blind",3.04,-0.18,AR],[24,"prof",4.25,-0.18,RE],[312,"wash",5.46,-0.18,ZB]]),
+      ...on(L4,[[107,"spot",-4.48,0.15,M5],[108,"spot",-2.84,0.15,M5],[109,"spot",-1.26,0.15,M5],[110,"spot",1.25,0.15,M5],[111,"spot",2.82,0.15,M5],[112,"spot",4.46,0.15,M5],[41,"fres",-4.83,-0.35,RF],[403,"strobe",-3.72,-0.18,BO],[305,"wash",-3.14,-0.18,ZB],[306,"wash",-0.45,-0.18,ZB],[307,"wash",0.43,-0.18,ZB],[308,"wash",3.11,-0.18,ZB],[404,"strobe",3.72,-0.18,BO],[42,"fres",4.78,-0.35,RF]]),
+      ...on(L5,[[101,"spot",-3.14,0.15,M5],[102,"spot",-1.91,0.15,M5],[103,"spot",-0.63,0.15,M5],[104,"spot",0.62,0.15,M5],[105,"spot",1.89,0.15,M5],[106,"spot",3.15,0.15,M5],[301,"wash",-4.01,-0.18,ZB],[302,"wash",-1.36,-0.18,ZB],[401,"strobe",-0.96,-0.18,BO],[402,"strobe",0.9,-0.18,BO],[303,"wash",1.27,-0.18,ZB],[304,"wash",3.91,-0.18,ZB]]),
+      at(321,"wash",-6.83,2.7,0.15,ZB,"DSR floor"),at(322,"wash",6.78,2.8,0.15,ZB,"DSL floor"),at(601,"haze",-4.8,11.6,0.15,"Antari F-1","USR floor")]};
+  /* Focus from the patch notes. Stage areas (SR negative): downstage row 3 m from the DSE, upstage row 8.5 m, head height 1.5 m.
+     High side washes cross to the far side at their own depth; front top washes aim 2 m upstage of the bar, rear top washes 1.5 m downstage. */
+  const A=(x,y,label)=>({x,y,z:1.5,label}),me=id=>RIGS.enmore.fx.find(f=>f.id===id);
+  const across=(id,label)=>{const f=me(id);return A(f.x<0?2.5:-2.5,f.y,label)},top=(id,dy,label)=>{const f=me(id);return A(f.x,f.y+dy,label)};
+  RIGS.enmore.focus={1:A(3.5,8.5,"USL"),2:A(5.5,3,"SL wing"),3:A(3.5,3,"SL"),4:A(1.2,3,"CSL"),5:A(-1.2,3,"CSR"),6:A(-3.5,3,"SR"),7:A(-5.5,3,"SR wing"),8:A(-3.5,8.5,"USR"),
+    31:across(31,"High side wash"),34:across(34,"High side wash"),41:across(41,"High side wash"),42:across(42,"High side wash"),
+    32:top(32,-1.5,"Rear top wash"),33:top(33,-1.5,"Rear top wash"),51:top(51,2,"Front top wash"),52:top(52,2,"Front top wash"),53:top(53,2,"Front top wash")};
+})();
+(()=>{ /* Metro: truss distances from the spec; bars matched to the June 2024 drawing */
+  const FOH=bar("FOH truss",-3.5,3.6,-4.5,4.5,{dimNote:"over the dancefloor"}),MS=bar("Midstage",2,4,-4.6,4.6),US=bar("Upstage",4,4,-4.6,4.6),LED=bar("LED truss",5.4,4.2,-4.5,4.5);
+  const P="Stage Par 100 Colour IP",X="XA400 Energy Spot Pro",grp=c=>[c-0.45,c-0.15,c+0.15,c+0.45],pars=[...grp(-3.2),...grp(0),...grp(3.2)];
+  RIGS.metro={stage:{w:10.1,d:6,deck:0.97},
+    note:"Redrawn from the June 2024 drawings with the September 2026 patch. Truss distances come from the spec. Trims are estimated from the 4.6 m stage-to-ceiling height.",
+    bars:[FOH,MS,US,LED],
+    fx:[...on(FOH,[[1,"fres",-4,0,"1.2k Fresnel"],...seq(11,4,[-2.4,-0.8,0.8,2.4],"prof",0,"Source4 Profile"),[15,"prof",0,-0.28,"Source4 Profile (DSC)"],[2,"fres",4,0,"1.2k Fresnel"],[53,"blind",-3.2,0.24,"Stage Blinder IP"],[56,"blind",3.2,0.24,"Stage Blinder IP"]]),
+      ...on(MS,[...seq(401,6,[-4.2,-2.2,-1,1,2.2,4.2],"spot",-0.12,X),...seq(201,12,pars,"par",0.14,P),[52,"blind",-1.6,0.14,"Stage Blinder IP"],[55,"blind",1.6,0.14,"Stage Blinder IP"]]),
+      ...on(US,[...seq(407,4,[-4.2,-2.2,2.2,4.2],"spot",-0.12,X),...seq(213,12,pars,"par",0.14,P)]),
+      ...on(LED,[...seq(601,4,[-3.4,-1.15,1.15,3.4],"strobe",0,"Ginamp Strobe 2"),[51,"blind",-4.3,0,"Stage Blinder IP"],[54,"blind",4.3,0,"Stage Blinder IP"]]),
+      at(101,"par",-4.8,0.35,1.5,P,"DS side fill SR"),at(102,"par",-4.8,1.05,1.5,P,"DS side fill SR"),at(103,"par",4.8,0.35,1.5,P,"DS side fill SL"),at(104,"par",4.8,1.05,1.5,P,"DS side fill SL"),
+      at(605,"strobe",-3.5,0.45,0.15,"Ginamp Strobe 2","DS floor"),at(608,"strobe",3.5,0.45,0.15,"Ginamp Strobe 2","DS floor"),at(606,"strobe",-2,5.5,0.15,"Ginamp Strobe 2","US floor"),at(607,"strobe",2,5.5,0.15,"Ginamp Strobe 2","US floor")]};
+})();
+(()=>{ /* Factory: fixture order and spacing measured from the April 2026 plot */
+  const FOH=bar("FOH bar",-1.6,2.9,-5.6,5.6),DS=bar("LX1",1.5,3,-4,4),MID=bar("LX2",3,3,-4,4),US=bar("LX3",4.5,3,-4,4);
+  const P="Stage Par Colour IP",S="Energy Spot Pro 400",G="Acme Ginamp",B="Stage Blinder IP",F="Fresnel",E="EK Profile";
+  RIGS.factory={stage:{w:8,d:6,deck:1.13},
+    note:"Bar layout from the April 2026 venue plot, numbered with your MA3 fixture IDs. Pars, spots, blinders and FOH profiles follow their MA3 stage positions. The Freznos and Ginamps are parked off-stage in MA3, so they take the plot positions in ID order. Fixtures that aren't on the venue plot (EVE F-50Z 15\u201318, Frezno 107, side fills 601\u2013604, the hazer 420) are placed from their MA3 positions. Trims are estimated.",
+    bars:[FOH,DS,MID,US],
+    fx:[...on(FOH,[[105,"fres",-5.06,0,"Frezno 150 HEX TR16"],[101,"fres",-4.39,0,"Frezno 150 TW STD P"],[14,"prof",-3.9,0,"LED eProfile HP"],[13,"prof",-3.17,0,"LED eProfile HP"],[1101,"blind",-2.29,0.2,"Stage Blinder IP"],[102,"fres",-1.13,0,"Frezno 150 TW STD P"],["PJ","proj",-0.25,0,"Panasonic projector"],[103,"fres",0.73,0,"Frezno 150 TW STD P"],[1102,"blind",1.95,0.2,"Stage Blinder IP"],[12,"prof",3.13,0,"LED eProfile HP"],[11,"prof",3.83,0,"LED eProfile HP"],[104,"fres",4.35,0,"Frezno 150 TW STD P"],[106,"fres",5.03,0,"Frezno 150 HEX TR16"],[107,"fres",0.3,0.26,"Frezno 150 HEX TR16"],[15,"fres",0,-0.3,"EVE F-50Z"],[16,"fres",-1.16,-0.3,"EVE F-50Z"],[17,"fres",-2.32,-0.3,"EVE F-50Z"],[18,"fres",-3.48,-0.3,"EVE F-50Z"]]),
+      ...on(DS,[[1011,"strobe",-3.85,0,"ACME GINAMP (STROBE 2)INT"],[309,"par",-3.05,0,"Stage Par 100 Colour IP"],[310,"par",-2.69,0,"Stage Par 100 Colour IP"],[311,"par",-2.33,0,"Stage Par 100 Colour IP"],[312,"par",-1.97,0,"Stage Par 100 Colour IP"],[313,"par",-0.53,0,"Stage Par 100 Colour IP"],[314,"par",-0.17,0,"Stage Par 100 Colour IP"],[315,"par",0.19,0,"Stage Par 100 Colour IP"],[316,"par",0.55,0,"Stage Par 100 Colour IP"],[317,"par",2.12,0,"Stage Par 100 Colour IP"],[318,"par",2.48,0,"Stage Par 100 Colour IP"],[319,"par",2.84,0,"Stage Par 100 Colour IP"],[320,"par",3.2,0,"Stage Par 100 Colour IP"],[1016,"strobe",3.76,0,"ACME GINAMP (STROBE 2)INT"]]),
+      ...on(MID,[[703,"spot",-2.82,0,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)"],[1103,"blind",-2.29,0.2,"Stage Blinder IP"],[701,"spot",-1.77,0,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)"],[1013,"strobe",-1.24,0.15,"ACME GINAMP (STROBE 2)INT"],[704,"spot",-0.68,0,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)"],[705,"spot",0.82,0,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)"],[1014,"strobe",1.39,0.15,"ACME GINAMP (STROBE 2)INT"],[702,"spot",1.95,0,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)"],[1104,"blind",2.38,0.2,"Stage Blinder IP"],[706,"spot",2.88,0,"ACME ENERGY SPOT PRO (XA-400SPOT PRO)"]]),
+      ...on(US,[[1012,"strobe",-2.62,0.12,"ACME GINAMP (STROBE 2)INT"],[301,"par",-2.1,0,"Stage Par 100 Colour IP"],[302,"par",-1.74,0,"Stage Par 100 Colour IP"],[303,"par",-1.38,0,"Stage Par 100 Colour IP"],[304,"par",-1.02,0,"Stage Par 100 Colour IP"],[305,"par",1.05,0,"Stage Par 100 Colour IP"],[306,"par",1.41,0,"Stage Par 100 Colour IP"],[307,"par",1.77,0,"Stage Par 100 Colour IP"],[308,"par",2.13,0,"Stage Par 100 Colour IP"],[1015,"strobe",2.68,0.12,"ACME GINAMP (STROBE 2)INT"]]),
+      at(601,"par",-5.5,-2.4,2.9,"Stage Par 100 Colour IP","Side fill"),at(602,"par",-2,-2.4,2.9,"Stage Par 100 Colour IP","Side fill"),at(603,"par",2,-2.4,2.9,"Stage Par 100 Colour IP","Side fill"),at(604,"par",5.5,-2.4,2.9,"Stage Par 100 Colour IP","Side fill"),at(420,"haze",-3.5,5.6,0.15,"F-3 Fazer","Floor USR")]};
+})();
+(()=>{ /* Metro Social: measured off the August 2026 plot, which is not to scale */
+  const Z=3.2,A=[-4.05,3.5],T=[0,7.65],C=[4.05,3.5];
+  const base=bar("Base truss",3.3,Z,-4.35,4.35),front=bar("Front truss",0.5,Z,-4.4,4.35);
+  const X=(id,t,x,y,name)=>({id,t,x,y,z:Z,name});
+  RIGS.social={
+    note:"Redrawn from the August 2026 plot, which is not to scale. The venue sheet doesn't label positions with IDs, so IDs are assigned left to right around the A-frame. Truss mates 506\u2013507 are placed at the front truss ends as a guess.",
+    bars:[base,front],segs:[{n:"A-frame",a:A,b:T,z:Z},{n:"",a:T,b:C,z:Z}],
+    fx:[X(101,"spot",-2.95,4.75,"Acme Oxygen"),X(102,"spot",-1.85,5.5,"Acme Oxygen"),X(103,"spot",-0.73,6.65,"Acme Oxygen"),X(104,"spot",0.68,6.6,"Acme Oxygen"),X(105,"spot",1.75,5.55,"Acme Oxygen"),X(106,"spot",2.92,4.45,"Acme Oxygen"),
+      ...[[-3.27,4.05],[-2.68,4.65],[-2.15,5.2],[-1.55,5.8],[-1.15,6.2],[-0.4,7],[0.33,7],[0.95,6.35],[1.45,5.92],[2.1,5.25],[2.65,4.75],[3.35,4.1]].map(([x,y],i)=>X(201+i,"par",x,y,"ProPar 12x12")),
+      ...[-3.05,-1.12,1.31,3.15].map((x,i)=>X(301+i,"blind",x,3.3,"Stage Blinder IP")),
+      X(401,"par",-3.55,3.62,"Stage Par 100 Colour IP"),X(402,"par",3.58,3.7,"Stage Par 100 Colour IP"),
+      ...[[-4.25,3.2],[-4.05,3.62],[0,7.55],[4.05,3.68],[4.3,3.2],[-4.4,0.5],[4.35,0.5]].map(([x,y],i)=>X(501+i,"mate",x,y,"LED Truss Mate")),
+      X(601,"strobe",-2.1,4.4,"Acme Ginamp"),X(602,"strobe",2.1,4.4,"Acme Ginamp"),
+      ...[-1.97,-0.05,1.84].map((x,i)=>X(901+i,"fres",x,0.65,"Frezno 150 HEX"))]};
+})();
+
+/* ---------- more Century venues ---------- */
+const P=(id,fx,mode,ch,u,a,loc)=>[id,fx,mode,ch,u,a,loc];
+const MANNING_PATCH=[
+ ["LX1 (upstage truss)"],
+ ...[1,29,57,85].map((a,i)=>P(101+i,"Ayrton Mistral-S","Standard 28ch",28,1,a,"LX1")),
+ ...[113,169,225,281].map((a,i)=>P(201+i,"Chauvet Rogue R2 Wash","56ch",56,1,a,"LX1")),
+ P(301,"Chauvet COLORado Strike M","74ch",74,1,337,"LX1 dropper, SR"),P(302,"Chauvet COLORado Strike M","74ch",74,1,411,"LX1 dropper, SL"),
+ ["LX2 and side truss"],
+ ...[1,57,113,169].map((a,i)=>P(205+i,"Chauvet Rogue R2 Wash","56ch",56,2,a,"LX2")),
+ P(401,"Chauvet Strike Array","8ch",8,2,225,"LX2"),P(402,"Chauvet Strike Array","8ch",8,2,233,"LX2"),
+ ...[263,273,283,293].map((a,i)=>P(601+i,"Chauvet COLORdash Par Quad 18","10ch",10,2,a,i<2?"Side truss SR, top side":"Side truss SL, top side")),
+ ["FOH and floor"],
+ ...[1,57,113,169].map((a,i)=>P(209+i,"Chauvet Rogue R2 Wash","56ch",56,3,a,"FOH truss")),
+ P(801,"Vari-Lite VLX (VL3500 Wash on the plot)","Mode 2",72,4,1,"Floor DSR, on the speaker stack"),P(802,"Vari-Lite VLX (VL3500 Wash on the plot)","Mode 2",72,4,73,"Floor DSL, on the speaker stack")];
+
+const ECP="ProLights EclProfile CT+IP",ECF="ProLights EclFresnel CT+M";
+const THEATRE_PATCH=[
+ ["Bridge 2 face wash"],
+ ...["DSOP","DSOP","DSC","DSC","DSPS","DSPS","USOP","USOP","USC","USC","USPS","USPS"].map((f,i)=>P(1+i,ECP,"RAW 16 bit",16,2,1+16*i,"Bridge 2: "+f)),
+ ...[0,1,2,3,4].map(i=>P(31+i,ECP,"RAW 16 bit",16,2,193+16*i,"Bridge 2: special")),
+ ["House positions"],
+ P(41,"PAR38","Dimmer",1,1,294,"Dress circle: curtain warmer"),
+ P(151,"Martin MAC Viper Profile","16 bit Extended",34,2,273,"PS box boom"),P(152,"Martin MAC Viper Profile","16 bit Extended",34,2,307,"OP box boom"),
+ ["Over stage"],
+ ...["DSOP","DSC","DSPS"].map((f,i)=>P(51+i,ECF,"RAW 16 bit",19,11,1+19*i,"LX1: "+f)),
+ ...["CSOP","CS","CSPS"].map((f,i)=>P(61+i,ECF,"RAW 16 bit",19,12,1+19*i,"LX2: "+f)),
+ ...["USOP","USC","USPS"].map((f,i)=>P(71+i,ECF,"RAW 16 bit",19,13,1+19*i,"LX3: "+f)),
+ P(701,"CKC TourPro Aurora V4","Extended",52,12,58,"LX2"),P(702,"CKC TourPro Aurora V4","Extended",52,12,110,"LX2"),
+ P(703,"CKC TourPro Aurora V4","Extended",52,13,58,"LX3"),P(704,"CKC TourPro Aurora V4","Extended",52,13,110,"LX3"),
+ P(705,"CKC TourPro Aurora V4","Extended",52,14,58,"LX4"),P(706,"CKC TourPro Aurora V4","Extended",52,14,110,"LX4"),
+ P(601,"CKC Wash Z7","45ch",45,12,162,"LX2"),P(602,"CKC Wash Z7","45ch",45,12,207,"LX2"),
+ P(603,"CKC Wash Z7","45ch",45,13,162,"LX3"),P(604,"CKC Wash Z7","45ch",45,13,207,"LX3"),
+ P(605,"CKC Wash Z7","45ch",45,14,162,"LX4"),P(606,"CKC Wash Z7","45ch",45,14,207,"LX4"),
+ ...[1,34,67,100,133,166].map((a,i)=>P(201+i,"Chauvet Ovation CYC 3FC","33ch",33,15,a,"LX5: cyc")),
+ ["Side light (pan bars)"],
+ ...[[81,4,1,"OP"],[82,4,19,"PS"],[83,4,37,"OP"],[84,4,55,"PS"],[85,4,73,"OP"],[86,3,91,"PS"],[87,4,109,"OP"],[88,4,127,"PS"]].map(([id,u,a,s])=>P(id,"F300IIFC fresnel","18ch",18,u,a,s+" pan bar"))];
+
+const SPX="Selecon SPX 15\u201335\u00b0 zoomspot",SPXW="Selecon SPX 25\u201350\u00b0 zoomspot",RAMA="Selecon Rama 175 fresnel",ACF="Selecon Acclaim fresnel",V6="CKC Aurora Profile V6";
+const HALL_PATCH=[
+ ["FOH bridges"],
+ P(201,"Selecon Acclaim PC","Control",1,1,98,"Bridge 1"),P(41,"Selecon Acclaim PC","Control",1,1,104,"Bridge 1"),P(42,"Selecon Acclaim PC","Control",1,1,114,"Bridge 1"),P(202,"Selecon Acclaim PC","Control",1,1,120,"Bridge 1"),
+ P(31,SPX,"Control",1,1,122,"Bridge 2"),P(1,"ProLights EclProfile CT+ 26\u00b0","RAW 16 bit",16,2,1,"Bridge 2"),P(2,"ProLights EclProfile CT+ 26\u00b0","RAW 16 bit",16,2,17,"Bridge 2"),
+ P(32,"ProLights EclProfile CT+ 15\u201330\u00b0","Uno",1,1,125,"Bridge 2"),P(3,"ProLights EclProfile CT+ 26\u00b0","RAW 16 bit",16,2,33,"Bridge 2"),P(4,"ProLights EclProfile CT+ 26\u00b0","RAW 16 bit",16,2,49,"Bridge 2"),
+ P(34,"ProLights EclProfile CT+ 15\u201330\u00b0","Uno",1,1,132,"Bridge 2"),P(5,"ProLights EclProfile CT+ 26\u00b0","RAW 16 bit",16,2,65,"Bridge 2"),P(6,"ProLights EclProfile CT+ 26\u00b0","RAW 16 bit",16,2,81,"Bridge 2"),
+ P(36,"ProLights EclProfile CT+ 15\u201330\u00b0","Uno",1,1,140,"Bridge 2"),P(7,"ProLights EclProfile CT+ 26\u00b0","RAW 16 bit",16,2,97,"Bridge 2"),P(8,"ProLights EclProfile CT+ 26\u00b0","RAW 16 bit",16,2,113,"Bridge 2"),P(37,SPX,"Control",1,1,143,"Bridge 2"),
+ P(9,SPXW,"Control",1,1,149,"Bridge 3"),P(21,SPX,"Control",1,1,151,"Bridge 3"),P(191,SPX,"Control",1,1,155,"Bridge 3"),P(22,SPX,"Control",1,1,161,"Bridge 3"),P(10,SPXW,"Control",1,1,163,"Bridge 3"),
+ ["LX1"],
+ P(601,"CKC Wash ZB7","Extended",45,11,101,"LX1"),P(602,"CKC Wash ZB7","Extended",45,11,146,"LX1"),
+ P(51,RAMA,"Control",1,1,96,"LX1"),P(52,RAMA,"Control",1,1,91,"LX1"),P(111,SPX,"Control",1,1,90,"LX1"),P(53,RAMA,"Control",1,1,85,"LX1"),P(112,SPX,"Control",1,1,79,"LX1"),P(54,RAMA,"Control",1,1,78,"LX1"),P(55,RAMA,"Control",1,1,74,"LX1"),
+ ["LX2"],
+ P(603,"CKC Wash ZB19","Basic",17,12,101,"LX2"),P(604,"CKC Wash ZB19","Basic",17,12,144,"LX2"),P(701,V6,"Extended",43,12,1,"LX2 (listed under LX4 on the sheet)"),P(702,V6,"Extended",43,12,44,"LX2 (listed under LX4 on the sheet)"),
+ P(211,ACF,"Control",1,1,70,"LX2"),P(61,RAMA,"Control",1,1,72,"LX2"),P(62,RAMA,"Control",1,1,67,"LX2"),P(63,RAMA,"Control",1,1,61,"LX2"),P(64,RAMA,"Control",1,1,54,"LX2"),P(65,RAMA,"Control",1,1,49,"LX2"),P(212,ACF,"Control",1,1,51,"LX2"),
+ ["LX3"],
+ P("603b","CKC Wash ZB19","Basic",17,13,101,"LX3. The sheet numbers it 603, same as LX2."),P("604b","CKC Wash ZB19","Basic",17,13,118,"LX3. The sheet numbers it 604, same as LX2."),P(605,"CKC Wash ZB19","Basic",17,13,135,"LX3"),P(606,"CKC Wash ZB19","Basic",17,13,152,"LX3"),
+ P(703,V6,"Extended",43,13,1,"LX3 (listed under LX4 on the sheet)"),P(704,V6,"Extended",43,13,44,"LX3 (listed under LX4 on the sheet)"),
+ P("213b",ACF,"Control",1,1,48,"LX3. The sheet numbers it 213, same as LX4."),P(71,RAMA,"Control",1,1,35,"LX3"),P(72,RAMA,"Control",1,1,36,"LX3"),P(73,RAMA,"Control",1,1,34,"LX3"),P(74,RAMA,"Control",1,1,27,"LX3"),P("214b",ACF,"Control",1,1,25,"LX3. The sheet numbers it 214, same as LX4."),
+ ["LX4"],
+ P(213,ACF,"Control",1,1,24,"LX4"),P(81,RAMA,"Control",1,1,23,"LX4"),P(705,V6,"Extended",43,14,1,"LX4"),P(82,RAMA,"Control",1,1,18,"LX4"),P(706,V6,"Extended",43,14,44,"LX4"),
+ P(83,RAMA,"Control",1,1,13,"LX4"),P(707,V6,"Extended",43,14,87,"LX4"),P(84,RAMA,"Control",1,1,8,"LX4"),P(708,V6,"Extended",43,14,130,"LX4"),P(85,RAMA,"Control",1,1,2,"LX4"),P(214,ACF,"Control",1,1,1,"LX4")];
+
+(()=>{ /* Manning Bar: measured off the to-scale 2023 lighting sheet (9 m stage) */
+  const FOH=bar("FOH truss",-3.67,3.3,-4.5,4.5),L2=bar("LX2",1.34,3.4,-3.24,3.24),L1=bar("LX1",3.86,3.4,-3.24,3.24);
+  const MS="Ayrton Mistral-S",RG="Chauvet Rogue R2 Wash";
+  RIGS.manning={stage:{w:9,d:4.6,deck:0.85},
+    note:"Redrawn from the venue's 2023 lighting sheet, which is drawn to scale, with its patch. Trims are estimated from the 3.6 m deck-to-grid height.",
+    bars:[FOH,L2,L1],segs:[{n:"",a:[-3.24,1.34],b:[-3.24,3.86],z:3.4},{n:"",a:[3.24,1.34],b:[3.24,3.86],z:3.4}],
+    fx:[...on(L1,[[201,"wash",-2.71,0.12,RG],[101,"spot",-2.09,-0.12,MS],[202,"wash",-1.27,0.12,RG],[102,"spot",-0.52,-0.12,MS],[103,"spot",0.73,-0.12,MS],[203,"wash",1.42,0.12,RG],[104,"spot",2.1,-0.12,MS],[204,"wash",2.68,0.12,RG]]),
+      at(301,"strobe",-2.58,3.35,2.6,"Chauvet COLORado Strike M","LX1 dropper"),at(302,"strobe",2.62,3.35,2.6,"Chauvet COLORado Strike M","LX1 dropper"),
+      ...on(L2,[[205,"wash",-1.97,0,RG],[401,"blind",-1.27,0,"Chauvet Strike Array"],[206,"wash",-0.52,0,RG],[207,"wash",0.73,0,RG],[402,"blind",1.38,0,"Chauvet Strike Array"],[208,"wash",2.1,0,RG]]),
+      at(601,"par",-3.24,1.98,3.4,"COLORdash Par Quad 18","Side truss SR"),at(602,"par",-3.24,1.55,3.4,"COLORdash Par Quad 18","Side truss SR"),at(603,"par",3.24,1.98,3.4,"COLORdash Par Quad 18","Side truss SL"),at(604,"par",3.24,1.6,3.4,"COLORdash Par Quad 18","Side truss SL"),
+      ...on(FOH,[[209,"wash",-4.01,0,RG],[210,"wash",-1.33,0,RG],[211,"wash",1.36,0,RG],[212,"wash",4.05,0,RG]]),
+      at(801,"wash",-5.16,-0.35,0.3,"Vari-Lite VLX","Floor DSR"),at(802,"wash",5,-0.35,0.3,"Vari-Lite VLX","Floor DSL")]};
+})();
+(()=>{ /* Concourse Theatre: fly lines from the October 2025 plot, distances from the setting line */
+  const B2=bar("Bridge 2",-15.8,9,-6.3,6.3,{planY:-3.4,dimNote:"15.8 m out"}),L1=bar("LX1",2.7,8,-8.25,8.25),L2=bar("LX2",4.7,8,-8.25,8.25),L3=bar("LX3",6.5,8,-8.25,8.25),L4=bar("LX4",7.5,8,-8.25,8.25),L5=bar("LX5",9.1,8,-8.25,8.25);
+  const V4="CKC Aurora V4",Z7="CKC Wash Z7";
+  const b2x={31:-5.8,1:-5.3,7:-4.8,3:-3,9:-2.6,2:-1.77,8:-1.12,32:-0.48,33:0,34:0.48,12:1.1,6:1.75,4:2.43,10:3,11:4.6,5:5.1,35:5.8};
+  RIGS.theatre={stage:{w:14,d:10.9,deck:1},pros:{y:0.3,w:12,h:6.5},
+    note:"Redrawn from the venue's October 2025 plot and patch. LX bars follow the fly lines on the plot (lines 7, 17, 26, 31 and 38), which differ slightly from the spec's standard allocation. Trims and the box boom and dress circle positions are estimates.",
+    bars:[B2,L1,L2,L3,L4,L5],segs:[{n:"",a:[-8.4,2.2],b:[-8.4,7.9],z:4},{n:"",a:[8.4,2.2],b:[8.4,7.9],z:4}],
+    fx:[...on(B2,Object.entries(b2x).map(([id,x])=>[+id,"prof",x,0,ECP])),
+      Object.assign(at(41,"par",-6.5,-18,6,"PAR38","Dress circle"),{planY:-4.6}),
+      at(152,"spot",-7.6,-2.5,5,"MAC Viper Profile","OP box boom"),at(151,"spot",7.6,-2.5,5,"MAC Viper Profile","PS box boom"),
+      ...on(L1,[[51,"fres",-2.95,0,ECF],[52,"fres",0,0,ECF],[53,"fres",2.85,0,ECF]]),
+      ...on(L2,[[701,"spot",-3.85,0,V4],[61,"fres",-2.95,0,ECF],[601,"wash",-2.4,0.15,Z7],[62,"fres",0,0,ECF],[602,"wash",2.3,0.15,Z7],[63,"fres",2.85,0,ECF],[702,"spot",3.75,0,V4]]),
+      ...on(L3,[[71,"fres",-2.95,0,ECF],[703,"spot",-2.4,0.15,V4],[603,"wash",-0.6,0.15,Z7],[72,"fres",0,0,ECF],[604,"wash",0.55,0.15,Z7],[704,"spot",2.3,0.15,V4],[73,"fres",2.85,0,ECF]]),
+      ...on(L4,[[605,"wash",-3.85,0,Z7],[705,"spot",-1.45,0,V4],[706,"spot",1.4,0,V4],[606,"wash",4.3,0,Z7]]),
+      ...on(L5,[-4.8,-2.9,-1,0.9,2.85,4.75].map((x,i)=>[201+i,"par",x,0,"Ovation CYC 3FC"])),
+      ...[[81,2.7],[83,4.7],[85,6.5],[87,7.5]].map(([id,y])=>at(id,"fres",-8.4,y,4,"F300IIFC fresnel","OP pan bar")),
+      ...[[82,2.7],[84,4.7],[86,6.5],[88,7.5]].map(([id,y])=>at(id,"fres",8.4,y,4,"F300IIFC fresnel","PS pan bar"))]};
+})();
+(()=>{ /* Concourse Concert Hall: distances from the setting line in the spec; order and spacing from the July 2025 plot */
+  const B1=bar("Bridge 1",-4.3,8,-8.6,8.6),B2=bar("Bridge 2",-11.6,9,-6.8,6.8,{planY:-6.4,dimNote:"11.6 m out"}),B3=bar("Bridge 3",-18.88,10,-4,4,{planY:-8.4,dimNote:"18.9 m out"});
+  const L1=bar("LX1",0.7,9,-6.5,6.5),L2=bar("LX2",3.865,9,-6.5,6.5),L3=bar("LX3",6.02,9,-4.8,4.8),L4=bar("LX4",8.9,9,-4.8,4.8),TR=bar("Truss",9.6,9.5,-4.5,4.5);
+  const E26="EclProfile CT+ 26\u00b0",E15="EclProfile CT+ 15\u201330\u00b0",ZB="CKC Wash ZB19";
+  RIGS.hall={stage:{w:16,d:9.5,deck:1},
+    note:"Redrawn from the venue's July 2025 plot with its patch, which lists each bar's fixtures in order. Bar distances come from the spec. The sheet repeats IDs 213, 214, 603 and 604 on two bars, so the LX3 copies are shown as 213b, 214b, 603b and 604b. Rama 75 has no address on the sheet. Trims are estimates.",
+    bars:[B1,B2,B3,L1,L2,L3,L4,TR],
+    fx:[...on(B1,[[201,"fres",-8.1,0,"Acclaim PC"],[41,"fres",-5,0,"Acclaim PC"],[42,"fres",5.1,0,"Acclaim PC"],[202,"fres",8.2,0,"Acclaim PC"]]),
+      ...on(B2,[[31,"prof",-6.3,0,SPX],[1,"prof",-5.5,0,E26],[2,"prof",-5,0,E26],[32,"prof",-4.2,0,E15],[3,"prof",-3.5,0,E26],[4,"prof",-2.98,0,E26],[34,"prof",0,0,E15],[5,"prof",3.1,0,E26],[6,"prof",3.57,0,E26],[36,"prof",4.4,0,E15],[7,"prof",5.1,0,E26],[8,"prof",5.67,0,E26],[37,"prof",6.4,0,SPX]]),
+      ...on(B3,[[9,"prof",-3.4,0,SPXW],[21,"prof",-1.24,0,SPX],[191,"prof",0,0,SPX],[22,"prof",1.3,0,SPX],[10,"prof",3.45,0,SPXW]]),
+      ...on(L1,[[51,"fres",-5.1,0,RAMA],[601,"wash",-4.1,0,"CKC Wash ZB7"],[52,"fres",-2.55,0,RAMA],[111,"prof",-2,0.15,SPX],[53,"fres",0,0,RAMA],[112,"prof",2,0.15,SPX],[54,"fres",2.55,0,RAMA],[602,"wash",4.05,0,"CKC Wash ZB7"],[55,"fres",5.1,0,RAMA]]),
+      ...on(L2,[[211,"fres",-6.2,0,ACF],[61,"fres",-5.1,0,RAMA],[603,"wash",-3.05,0.15,ZB],[62,"fres",-2.4,0,RAMA],[701,"spot",-1,0,V6],[63,"fres",0,0,RAMA],[702,"spot",1,0,V6],[64,"fres",2.45,0,RAMA],[604,"wash",3.05,0.15,ZB],[65,"fres",5.1,0,RAMA],[212,"fres",6.2,0,ACF]]),
+      ...on(L3,[["213b","fres",-4.65,0,ACF],[71,"fres",-4.2,0.15,RAMA],["603b","wash",-3.3,0,ZB],[703,"spot",-2.1,0,V6],["604b","wash",-1.43,0.15,ZB],[72,"fres",-0.9,0,RAMA],[75,"fres",0,0.15,RAMA],[73,"fres",0.9,0,RAMA],[605,"wash",1.43,0.15,ZB],[704,"spot",2.1,0,V6],[606,"wash",2.85,0.15,ZB],[74,"fres",3.7,0,RAMA],["214b","fres",4.65,0,ACF]]),
+      ...on(L4,[[213,"fres",-4.6,0,ACF],[81,"fres",-4.1,0.15,RAMA],[705,"spot",-3.1,0,V6],[82,"fres",-2,0,RAMA],[706,"spot",-1.07,0,V6],[83,"fres",0,0,RAMA],[707,"spot",1,0,V6],[84,"fres",2,0,RAMA],[708,"spot",3,0,V6],[85,"fres",4,0.15,RAMA],[214,"fres",4.55,0,ACF]])]};
+})();
+(()=>{ /* Darling Quarter Theatre: bar spacing from the April 2026 plot, measured from the back wall */
+  const L5=bar("LX5",3.7,2.6,-4.8,4.8),L4=bar("LX4",1.7,2.6,-4.8,4.8),L3=bar("LX3",0.35,2.6,-4.8,4.8),L2=bar("LX2",-2.95,2.6,-4.8,4.8),L1=bar("LX1",-6.55,2.6,-4.8,4.8);
+  const VV="ETC Selador Vivid-R 11",F4="ETC Source 4 fresnel",BZ="BeamZ LED profile",V4="CKC Aurora V4",S4="ETC Source 4 zoom 15\u201330\u00b0";
+  RIGS.dq={stage:{w:9.6,d:4.9,deck:0.94},
+    note:"Redrawn from the venue's April 2026 standard rig plot. Bar spacing comes from the plot, measured from the back wall, with the stage edge 4.9 m out. No patch is published, so fixture IDs are numbered by bar (LX1 is 101\u2013107, and so on). The plot isn't to scale across the room, so side batten positions are approximate.",
+    bars:[L1,L2,L3,L4,L5],segs:[{n:"OP batten",a:[-7.4,-2.5],b:[-7.4,-7.3],z:2.4},{n:"PS batten",a:[7.4,-2.5],b:[7.4,-7.3],z:2.4}],
+    fx:[...on(L5,[-3.21,-0.81,0.8,3.2].map((x,i)=>[501+i,"par",x,0,VV])),
+      ...on(L4,[-4.02,-2.09,2.07,4].map((x,i)=>[401+i,"par",x,0,VV])),
+      ...on(L2,[[201,"fres",-3.85,0,F4],[202,"fres",-2.41,0,F4],[203,"fres",-0.96,0,F4],["PJ","proj",0,0,"Epson EB-L615U projector"],[204,"fres",1.02,0,F4],[205,"fres",2.46,0,F4],[206,"fres",3.91,0,F4]]),
+      ...on(L1,[[101,"prof",-3.52,0,BZ],[102,"spot",-2.41,0,V4],[103,"prof",-1.13,0,BZ],[104,"fres",0,0,F4],[105,"prof",1.12,0,BZ],[106,"spot",2.41,0,V4],[107,"prof",3.68,0,BZ]]),
+      at(601,"prof",-7.4,-3.58,2.4,S4,"OP batten"),at(602,"prof",-7.4,-5.38,2.4,S4,"OP batten"),at(603,"spot",-7.4,-6.51,2.4,V4,"OP batten"),
+      at(611,"prof",7.4,-3.58,2.4,S4,"PS batten"),at(612,"prof",7.4,-5.38,2.4,S4,"PS batten"),at(613,"spot",7.4,-6.51,2.4,V4,"PS batten")]};
+})();
+
+VENUES.push(
+{ id:"manning", tab:"Manning Bar", name:"Manning Bar", addr:"Level 2, Manning Building, University of Sydney, Manning Road, Camperdown NSW",
+  chips:[["ok","Spec: 2026"],["warn","Plot and patch: 2023 sheet"]],
+  stats:[["9 \u00d7 4.6 m","Stage W \u00d7 D"],["850 mm","Stage height"],["3.6 m","Deck to grid"],["26","Fixtures"],["4","DMX universes"],["grandMA3","Compact"]],
+  rig:{title:"House rig",src:"Manning 2026 tech spec and 2023 lighting sheet",
+    groups:[["Control",["grandMA3 Compact","Netron EN12 node, sACN","The 2026 spec says 3 universes; the patch uses 4"]],
+            ["Fixtures",[["4","Ayrton Mistral-S"],["12","Chauvet Rogue R2 Wash"],["2","Chauvet COLORado Strike M"],["2","Chauvet Strike Array"],["4","Chauvet COLORdash Par Quad 18"],["2","Vari-Lite VLX on the floor"]]],
+            ["Video and DJ",["Panasonic PT-EX610E, 6,200 lm, long throw","8 m front screen or 5 m back screen","4 \u00d7 CDJ-3000, 2 \u00d7 DJM-900NXS2, 2 \u00d7 CDJ-2000NXS"]]]},
+  patch:{rows:MANNING_PATCH,title:"Patch (2023 lighting sheet)",src:"Manning-bar-2023_lighting_V1, uploaded September 2026"},
+  drawings:[["img/manning-plot.png","Lighting plot, 2023 sheet","LX1 and LX2 on a box truss, the FOH truss, and VLX units on the speaker stacks."]],
+  info:[["Stage",[["Width","9 m"],["Depth","4.6 m"],["Height from dancefloor","850 mm"],["Deck to grid","3.6 m"],["Backdrop","Up to 6 \u00d7 3.2 m on a fixed bar"],["Drapes","Black velvet front, opera wool back"]]],
+        ["Audio",[["PA","d&b V12 and V8, V-Sub and J-Infra"],["FOH","DiGiCo Quantum 225, MQ Rack"],["Monitors","dLive C3500, CDM48"],["Wedges","12 \u00d7 d&b M4, 7 sends plus drum sub and cue"],["Split","48 inputs, passive 3-way"]]],
+        ["Load in",[["Dock","Manning Road, by the zebra crossing"],["Lift door","1,160 W \u00d7 2,080 H mm"],["Lift interior","1,600 \u00d7 1,900 \u00d7 2,400 mm"],["Ramp to stage","1,200 mm wide"],["Access","6 m JLG EWP, yellow card needed"]]],
+        ["Crew and charges",[["Audio or lighting tech","$59 + GST per hour"],["EWP operator","$500 + GST"],["Early load in","$120 per hour"],["Haze","Detector isolation needs 72 hours' notice"]]]],
+  sources:[["Manning Bar tech spec, 2026","11/2026/09/16022008/MAN26_Tech-Specs-2.pdf","PDF, 4 pp"],["Manning Bar lighting plot and patch (2023 sheet)","11/2026/09/16022005/Manning-bar-2023_lighting_V1.pdf","PDF, 3 pp"],["LX plot, August 2024","11/2024/08/14221020/LX-Plot-Manning-Bar.pdf","PDF, 1 p"]]},
+
+{ id:"theatre", tab:"Concourse Theatre", name:"The Concourse Theatre", addr:"409 Victoria Avenue, Chatswood NSW",
+  chips:[["ok","Spec: April 2026"],["ok","Plot and patch: October 2025"]],
+  stats:[["500","Capacity"],["12 \u00d7 6.5 m","Proscenium (house standard)"],["23.45 m","Wall to wall"],["10.9 m","Setting line to rear wall"],["16.67 m","Stage to grid"],["40","Fly lines"]],
+  rig:{title:"House rig",src:"Concourse Theatre Standard 2025 plot",
+    groups:[["Control",["ETC console (the spec doesn't name it)","Standard rig on universes 1\u20134 and 11\u201315"]],
+            ["Fixtures",[["17","ProLights EclProfile CT+IP on Bridge 2"],["9","ProLights EclFresnel CT+M"],["8","F300IIFC side fresnels on the pan bars"],["6","CKC Aurora V4"],["6","CKC Wash Z7"],["2","Martin MAC Viper Profile in the box booms"],["6","Chauvet Ovation CYC 3FC"],["1","PAR38 curtain warmer"]]],
+            ["Fly system",["40 powered winch lines plus 2 panorama bars","Batten drift 15.5 m, battens 16.5 m","500 kg WLL including batten; LX bars can't be swung"]]]},
+  patch:{rows:THEATRE_PATCH,title:"Patch (October 2025)",src:"Concourse Theatre Tech Specs, April 2026, pp. 20\u201321"},
+  drawings:[["img/theatre-plot.png","Over-stage plot, October 2025","LX1 to LX5, the pan bars and the box booms."],["img/theatre-foh.png","FOH plot, October 2025","Bridge 2 face wash and specials, dress circle positions."]],
+  info:[["Stage",[["Setting line","Downstage edge of the LED strip on the apron"],["Proscenium","10\u201314 m wide, 4\u20137 m high; house standard 12 \u00d7 6.5 m"],["Void","10 \u00d7 9.15 m"],["Surface","Hardwood, black masonite, screwing allowed"],["Orchestra pit","Motorised, 11 m long, 2.6 m deep at CL"]]],
+        ["Distances from setting line",[["House curtain","450 mm"],["First fly line","1.5 m"],["Last fly line","9.7 m"],["Bridge 1","13.3 m"],["Bridge 2","15.8 m"],["Control room","22.4 m"]]],
+        ["Power",[["Forestage","3 \u00d7 40 A 3-phase"],["Stage level","4 \u00d7 40 A 3-phase, 2 \u00d7 20 A single phase"],["Bridges","2 \u00d7 40 A on Bridge 1, 1 \u00d7 40 A on Bridge 2"],["Scenery dock","200 A Powerlock supply"]]],
+        ["Audio",[["PA","Martin Audio W8LM/W8LMD arrays, WMX sub"],["Fills","5 \u00d7 AQ6 front fill, 2 \u00d7 S2585n subs"],["Console","dLive S7000 or C1500, DM48, 2 \u00d7 DX168"]]]],
+  sources:[["Concourse Theatre tech specs, April 2026","13/2026/04/09023204/Concourse-Theatre-Tech-Specs.pdf-2-compressed.pdf","PDF, 23 pp"],["Theatre LX rig model, 2014","13/2024/06/05005636/Theatre-Full-Stalls-Seaing-LX-Rig-2014-Model-small.pdf","PDF, 1 p"],["Theatre LX bars model","13/2024/06/05005156/Theatre-Full-Stalls-Seaing-LX-bars-Clean-up-Model.pdf","PDF, 1 p"]]},
+
+{ id:"hall", tab:"Concert Hall", name:"The Concourse Concert Hall", addr:"409 Victoria Avenue, Chatswood NSW",
+  chips:[["ok","Spec: April 2026"],["ok","Plot and patch: July 2025"],["warn","Sheet repeats 4 IDs"]],
+  note:"<strong>The venue's patch repeats fixture IDs.</strong> 213 and 214 appear on both LX3 and LX4, and 603 and 604 on both LX2 and LX3, each with a different address. Here the LX3 copies are 213b, 214b, 603b and 604b. Check the real numbering with production before building a show file.",
+  stats:[["1,000","Capacity"],["144 m\u00b2","Stage area"],["16 / 10 m","Downstage / upstage width"],["9.5 m","Setting line to upstage wall"],["12.52 m","Stage to grid"],["4 + truss","Motorised LX bars"]],
+  rig:{title:"House rig",src:"Concourse Concert Hall plot, July 2025",
+    groups:[["Fixtures",[["12","Selecon SPX zoomspots"],["11","Selecon Rama 175 fresnels"],["8","ProLights EclProfile CT+ 26\u00b0"],["3","ProLights EclProfile CT+ 15\u201330\u00b0"],["8","CKC Aurora Profile V6"],["6","CKC Wash ZB19"],["2","CKC Wash ZB7"],["6","Selecon Acclaim fresnel"],["4","Selecon Acclaim PC"]]],
+            ["Fly system",["4 motorised Jands JLX lighting bars","1 flying projection screen","12-inch tri truss on 4 \u00d7 500 kg motors","Batten drift 11 m; LX1\u20132 13 m, LX3\u20134 9.6 m"]],
+            ["Rigging",["Batten point load 200 kg, WLL 500 kg","Extra points from the grid by arrangement","JLG-30AM EWP, 9 m, shared across venues"]]]},
+  patch:{rows:HALL_PATCH,title:"Patch (July 2025)",src:"Concourse Concert Hall Tech Specs, April 2026, pp. 19\u201320"},
+  drawings:[["img/hall-plot.png","Over-stage plot, July 2025","LX1 to LX4 and the truss."],["img/hall-foh.png","FOH plot, July 2025","Bridges 1 to 3."]],
+  info:[["Stage",[["Shape","Trapezoid, 144 m\u00b2"],["Width","16 m downstage (14 m between stairs), 10 m upstage"],["Setting line to upstage wall","9.5 m"],["Surface","Polished blackbutt; no screwing"],["Balconies","About 3 m above stage, overhanging 1.5 m each side"]]],
+        ["Distances from setting line",[["FOH Bridge 1","4.3 m"],["FOH Bridge 2","11.6 m"],["FOH Bridge 3","18.88 m"],["LX1 / LX2","0.7 m / 3.865 m"],["LX3 / LX4","6.02 m / 8.9 m"],["Truss","9.6 m"]]],
+        ["Power",[["Bridges 1\u20133","1 \u00d7 40 A 3-phase each"],["Catwalks 1\u20133","1 \u00d7 40 A 3-phase each"],["Stage level","1 \u00d7 40 A 3-phase per corner (4)"]]],
+        ["Audio",[["Arrays","8 \u00d7 NEXO GEO D per side, 2 \u00d7 GEO S delays"],["Fills","4 \u00d7 NEXO PS8, 2 \u00d7 Martin AQ8"],["Floor package","4 \u00d7 GEO D10 low-frequency boxes"],["Console","dLive S7000 or C1500, DM48, 2 \u00d7 DX168"]]]],
+  rooms:[{name:"The Lounge",src:"The Lounge info sheet and tech specs, May 2026",stats:[["300","Cabaret capacity"],["8.4 \u00d7 5 m","Main stage"],["0.8 m","Stage height"],["18","LED pars"]],
+    lists:[["Lighting",["ETC Ion with fader wing and touchscreen","Four-port sACN node","4 moving head spots, 4 full-colour LED profiles (FOH specials)","12 Zone warm white front wash, 18 LED pars","LED drapeline warmers and upstage starcloth"]],["Audio",["DVA line array: 12 \u00d7 T8, 3 \u00d7 S2585N, 2 cardioid subs","8 \u00d7 DVA S1518N subs","dLive S5000, DM48, Waves card","8 \u00d7 QSC K2 12-inch wedges"]],["Extras",["Panasonic PT-MZ880B laser projector: $700 + GST","3 screens (L, R and centre)","Hazer: $95 + GST"]]]}],
+  sources:[["Concourse Concert Hall tech specs, April 2026","13/2026/04/09023152/Concourse-Concert-Hall-Tech-Specs.pdf-1-compressed.pdf","PDF, 23 pp"],["Concert Hall stage plan with dimensions","13/2024/05/25011603/Concert-Hall-Stage-Plan-with-dimensions.pdf","PDF, 1 p"],["The Lounge info sheet and tech specs, May 2026","13/2026/05/21041729/Concourse-The-Lounge-Info-Sheet-and-Tech-Specs.pdf.pdf","PDF, 4 pp"]]},
+
+{ id:"dq", tab:"DQ Theatre", name:"Darling Quarter Theatre", addr:"Darling Quarter, 1\u201325 Harbour Street, Sydney NSW",
+  chips:[["ok","Spec: July 2026"],["ok","Plot: April 2026"],["bad","No published patch"]],
+  stats:[["9.6 \u00d7 4.9 m","Stage W \u00d7 D"],["0.94 m","Stage height"],["3.5 m","Stage floor to ceiling"],["2.5 m","Stage floor to lowest fixture"],["72","2.4 kW dimmers"],["grandMA3","onPC + Command Wing"]],
+  rig:{title:"House rig",src:"DQ Theatre venue spec, July 2026",
+    groups:[["Control",["grandMA3 onPC with Command Wing","72 \u00d7 2.4 kW Jands WMX dimmers in 6 wall racks","12 Pathport DMX nodes, 3 Pathport input nodes"]],
+            ["Stock",[["25","ETC Source 4 zoom 15\u201330\u00b0"],["12","ETC Source 4 zoom 25\u201350\u00b0"],["25","ETC Source 4 fresnel"],["20","ETC Selador Vivid-R LED cyc flood"],["4","CKC TourPro Aurora V4"]]],
+            ["Video",["Epson EB-L615U laser projector: $320 + GST","Motorised 3.02 \u00d7 1.88 m screen, USC","HDMI over Cat5e at FOH"]]]},
+  patch:{rows:[],title:"Patch",src:"None published"},
+  drawings:[["img/dq-plot.png","Standard rig plot, April 2026","LX1 to LX5 with bar spacing, and the OP and prompt battens."]],
+  info:[["Stage",[["Size","9.6 W \u00d7 4.9 D \u00d7 0.94 H m"],["Treads","4 sets, 0.6 m wide"],["Ceiling","3.5 m above stage"],["Lowest fixture","2.5 m above stage"]]],
+        ["Bar spacing (from the back wall)",[["LX5","1.2 m"],["LX4","3.2 m"],["LX3","4.55 m"],["LX2","7.85 m"],["LX1","11.45 m"]]],
+        ["Power",[["Stage right","1 \u00d7 3-phase"],["Dock","1 \u00d7 3-phase by the roller door"]]],
+        ["Audio",[["Console","Midas M32, DL32"],["PA","2 \u00d7 EVX 3-way, DSC fill, 2 \u00d7 EV MTL2 subs"],["Foldback","5 \u00d7 RCF ART912A"],["Wireless (hire)","8 \u00d7 ULXD handhelds, DPA headsets"]]]],
+  sources:[["DQ Theatre venue spec, July 2026","19/2026/09/16021616/DQ-THEATRE-VENUE-SPEC-July-2026-1.pdf","PDF, 3 pp"],["DQ Theatre LX plot and bar spacing, April 2026","19/2026/09/16021429/DQT-LX-PLOT-LX-Bar-Spacing-APRIL-2026-2.pdf","PDF, 1 p"],["DQ Theatre venue spec, August 2025","19/2025/08/19021153/DQ-THEATRE-VENUE-SPEC-August-2025-Version.pdf","PDF"]]}
+);
+
+/* ---------- other Sydney venues ---------- */
+const CRH_PATCH=(()=>{
+  const L7="ARRI L7-C",ECF="ProLights EclFresnel",ECP19="ProLights EclProfile CT+ 19\u00b0",ECP10="ProLights EclProfile CT+ 10\u00b0",AR="Selecon Arena 2K PC",SJ="ETC Source 4 Jr 26\u00b0",PAC="Selecon Pacific 12/28",LU="ETC S4 Lustr 2 19\u00b0",CLD="Martin MAC Encore Performance CLD",MB="Clay Paky Mini-B",E2="Martin MAC Encore Two";
+  return [
+  ["Hatch 1"],
+  P(207,L7,"L7 C P.006",16,3,1,"Hatch 1"),P(31,ECF,"VW Extended",11,11,65,"Hatch 1"),P(208,L7,"L7 C P.006",16,3,17,"Hatch 1"),P(32,ECF,"VW Extended",11,11,76,"Hatch 1"),
+  P(33,ECF,"VW Extended",11,11,87,"Hatch 1"),P(209,L7,"L7 C P.006",16,3,33,"Hatch 1"),P(34,ECF,"VW Extended",11,11,98,"Hatch 1"),P(210,L7,"L7 C P.006",16,3,49,"Hatch 1"),
+  ["Hatch 2"],
+  P(111,ECP19,"Extended RGB",12,2,323,"Hatch 2"),P(35,AR,"Dimmer",1,1,39,"Hatch 2"),P(211,L7,"L7 C P.006",16,2,218,"Hatch 2"),P(112,ECP19,"Extended RGB",12,2,335,"Hatch 2"),
+  P(36,AR,"Dimmer",1,1,38,"Hatch 2"),P(212,L7,"L7 C P.006",16,2,234,"Hatch 2"),P(213,L7,"L7 C P.006",16,2,250,"Hatch 2"),P(37,AR,"Dimmer",1,1,50,"Hatch 2"),
+  P(113,ECP19,"Extended RGB",12,2,347,"Hatch 2"),P(214,L7,"L7 C P.006",16,2,266,"Hatch 2"),P(38,AR,"Dimmer",1,1,51,"Hatch 2"),P(114,ECP19,"Extended RGB",12,2,359,"Hatch 2"),
+  ["Hatch 3"],
+  P(21,SJ,"Dimmer",1,1,53,"Hatch 3"),P(22,SJ,"Dimmer",1,1,165,"Hatch 3"),P(23,AR,"Dimmer",1,1,58,"Hatch 3. A Source 4 Jr is paired on the same dimmer."),P(24,AR,"Dimmer",1,1,59,"Hatch 3. A Source 4 Jr is paired on the same dimmer."),P(25,AR,"Dimmer",1,1,56,"Hatch 3"),P(26,AR,"Dimmer",1,1,57,"Hatch 3"),
+  ["FOH Bridge 1 and FOH Truss 1"],
+  ...[122,138,154,170,186,202].map((a,i)=>P(201+i,L7,"L7 C P.006",16,2,a,"FOH Bridge 1")),
+  ...[110,148,186,224,262,300].map((a,i)=>P(801+i,CLD,"Standard",38,11,a,"FOH Truss 1")),
+  ["FOH Bridge 2 and FOH Truss 2"],
+  P(101,ECP10,"Extended RGB",12,2,1,"FOH Bridge 2"),P(102,ECP10,"Extended RGB",12,2,13,"FOH Bridge 2"),P(1,PAC,"Dimmer",1,1,77,"FOH Bridge 2"),P(2,PAC,"Dimmer",1,1,79,"FOH Bridge 2"),P(3,PAC,"Dimmer",1,1,82,"FOH Bridge 2"),
+  P(103,ECP10,"Extended RGB",12,2,25,"FOH Bridge 2"),P(104,ECP10,"Extended RGB",12,2,37,"FOH Bridge 2"),P(4,PAC,"Dimmer",1,1,78,"FOH Bridge 2"),P(5,PAC,"Dimmer",1,1,81,"FOH Bridge 2"),P(6,PAC,"Dimmer",1,1,75,"FOH Bridge 2"),
+  P(105,ECP10,"Extended RGB",12,2,49,"FOH Bridge 2"),P(106,ECP10,"Extended RGB",12,2,61,"FOH Bridge 2"),P(7,PAC,"Dimmer",1,1,17,"FOH Bridge 2"),P(8,PAC,"Dimmer",1,1,74,"FOH Bridge 2"),P(9,PAC,"Dimmer",1,1,83,"FOH Bridge 2"),
+  P(107,ECP10,"Extended RGB",12,2,73,"FOH Bridge 2"),P(108,ECP10,"Extended RGB",12,2,85,"FOH Bridge 2"),P(10,PAC,"Dimmer",1,1,73,"FOH Bridge 2"),P(11,PAC,"Dimmer",1,1,167,"FOH Bridge 2"),P(12,PAC,"Dimmer",1,1,85,"FOH Bridge 2"),
+  P(109,ECP10,"Extended RGB",12,2,97,"FOH Bridge 2"),P(110,ECP10,"Extended RGB",12,2,109,"FOH Bridge 2"),
+  ...[1,39,77,115].map((a,i)=>P(807+i,CLD,"Standard",38,10,a,"FOH Truss 2")),
+  ["Over stage"],
+  P(601,MB,"Extended RGBW 16-bit MC (3 cells)",29,12,1,"LX1"),P(701,E2,"Ludicrous",68,12,117,"LX1"),P(602,MB,"Extended RGBW 16-bit MC (3 cells)",29,12,30,"LX1"),P(702,E2,"Ludicrous",68,12,185,"LX1"),
+  P(603,MB,"Extended RGBW 16-bit MC (3 cells)",29,12,59,"LX1"),P(703,E2,"Ludicrous",68,12,253,"LX1"),P(604,MB,"Extended RGBW 16-bit MC (3 cells)",29,12,88,"LX1"),
+  P(605,MB,"Extended RGBW 16-bit MC (3 cells)",29,13,1,"LX2"),P(704,E2,"Ludicrous",68,13,117,"LX2"),P(606,MB,"Extended RGBW 16-bit MC (3 cells)",29,13,30,"LX2"),P(705,E2,"Ludicrous",68,13,185,"LX2"),
+  P(607,MB,"Extended RGBW 16-bit MC (3 cells)",29,13,59,"LX2"),P(706,E2,"Ludicrous",68,13,253,"LX2"),P(608,MB,"Extended RGBW 16-bit MC (3 cells)",29,13,88,"LX2"),
+  ["House positions and floor"],
+  P(51,LU,"Direct Strobe Fan",10,23,440,"Underbox OP"),P(53,LU,"Direct Strobe Fan",10,23,450,"Underbox OP"),P(55,LU,"Direct Strobe Fan",10,23,460,"Underbox OP"),
+  P(52,LU,"Direct Strobe Fan",10,23,470,"Underbox PS"),P(54,LU,"Direct Strobe Fan",10,23,480,"Underbox PS"),P(56,LU,"Direct Strobe Fan",10,23,490,"Underbox PS"),
+  P(115,ECP10,"Extended RGB",12,22,246,"Circle bar"),P(116,ECP10,"Extended RGB",12,22,258,"Circle bar"),
+  P(501,"Chauvet COLORado Batten 72 Tour","Tour Arc 2+D",6,23,398,"Floor (stage)"),P(502,"Chauvet COLORado Batten 72 Tour","Tour Arc 2+D",6,23,404,"Floor (stage)")];
+})();
+
+(()=>{ /* City Recital Hall: stage and over-stage positions scaled off the 2026 standard rig plan (7 m stage depth); hatch and bridge depths estimated */
+  const H1a=bar("Hatch 1",-3.4,12,-6,-1.5),H1b=bar("",-3.4,12,1.5,6),H3a=bar("Hatch 3",-2.4,12,-5.5,-1.5),H3b=bar("",-2.4,12,1.5,5.5),H2=bar("Hatch 2",-1.2,12,-5.5,5.5);
+  const B1=bar("FOH Bridge 1",-4.4,11,-6.2,6.2),T1=bar("FOH Truss 1",-4.0,10,-6,6);
+  const B2=bar("FOH Bridge 2",-14.85,12,-6.2,6.2,{planY:-6.6,dimNote:"14.9 m out (scaled from the plan)"}),T2=bar("FOH Truss 2",-14.2,11,-6,6,{planY:-6.0,dimNote:"14.2 m out"});
+  const L1=bar("LX1",1.56,9,-5.5,5.5),L2=bar("LX2",3.97,9,-5.5,5.5);
+  const ev=(ids,a,b)=>ids.map((id,i)=>[id,(a+(b-a)*i/(ids.length-1))]);
+  const typ={207:"fres",208:"fres",209:"fres",210:"fres",31:"fres",32:"fres",33:"fres",34:"fres"};
+  const row=new Map(CRH_PATCH.filter(r=>r.length>1).map(r=>[r[0],r]));
+  const T=id=>{const n=row.get(id)[1];return /L7|Fresnel|Arena|PC/.test(n)?"fres":/Encore Two|Encore Performance/.test(n)?"spot":/Mini-B/.test(n)?"wash":/Batten/.test(n)?"batten":"prof"};
+  const put=(b,list,dy)=>on(b,list.map(([id,x])=>[id,T(id),x,dy||0,row.get(id)[1]]));
+  RIGS.crh={stage:{w:13,d:7,deck:1},
+    note:"Stage and LX bar positions are scaled off the venue's 2026 standard rig plan (v2.1). The spec gives the hatches and bridges as throw distances, not plan positions, so their depths here are estimates. Fixtures on each position are spaced evenly in patch order. The two Source 4 Jrs paired with 23 and 24 on Hatch 3 have no fixture number and aren't shown.",
+    bars:[B2,T2,B1,T1,H1a,H1b,H3a,H3b,H2,L1,L2],
+    fx:[...put(H1a,ev([207,31,208,32],-5.5,-2)),...put(H1b,ev([33,209,34,210],2,5.5)),
+      ...put(H2,ev([111,35,211,112,36,212,213,37,113,214,38,114],-5.2,5.2)),
+      ...put(H3a,ev([21,22,23],-5,-2)),...put(H3b,ev([24,25,26],2,5)),
+      ...put(B1,ev([201,202,203,204,205,206],-5.5,5.5)),...put(T1,ev([801,802,803,804,805,806],-5,5)),
+      ...put(B2,ev([101,102,1,2,3,103,104,4,5,6,105,106,7,8,9,107,108,10,11,12,109,110],-6,6)),
+      ...put(T2,[[807,-3.9],[808,-1.15],[809,0.74],[810,3.5]]),
+      ...put(L1,ev([601,701,602,702,603,703,604],-4.6,4.6)),...put(L2,ev([605,704,606,705,607,706,608],-4.6,4.6)),
+      ...[[51,-3],[53,-4.3],[55,-5.6]].map(([id,y])=>at(id,"prof",-7.2,y,4,row.get(id)[1],"Underbox OP")),
+      ...[[52,-3],[54,-4.3],[56,-5.6]].map(([id,y])=>at(id,"prof",7.2,y,4,row.get(id)[1],"Underbox PS")),
+      Object.assign(at(115,"prof",-4.1,-20.6,7,row.get(115)[1],"Circle bar"),{planY:-8}),Object.assign(at(116,"prof",4.1,-20.6,7,row.get(116)[1],"Circle bar"),{planY:-8}),
+      at(501,"batten",-2,6.3,0.1,row.get(501)[1],"Stage floor"),at(502,"batten",2,6.3,0.1,row.get(502)[1],"Stage floor")]};
+})();
+
+(()=>{ /* UNSW Roundhouse: positions from the November 2025 plot (v5, not to scale), using the 10 m standard stage for scale */
+  const MS="Maverick Force S Profile",M3="Maverick Force 3 Profile",RG="Rogue R2 Wash",BL="Show Technology LED Blinder",AT="Martin Atomic",S4="ETC Source Four LED S2",P150="Showline Par 150 Zoom",SL="Showline SL Bar 510";
+  const k=37.5,X0=867,mx=px=>+((px-X0)/k).toFixed(2);
+  const US=bar("US truss",6.67,8,-5,5),MID=bar("Mid truss",5.07,8,-5,5),FOH=bar("FOH truss",-1.63,8,-5.1,5.1),CR=bar("Cross truss",-6.99,8,-5.1,5.1);
+  const X=(id,t,x,y,name)=>({id,t,x,y,z:8,name,pos:t==="par"?"Ring truss":"Ring truss"});
+  const ring=[];for(let i=0;i<24;i++){const a=i/24*Math.PI*2,b=(i+1)/24*Math.PI*2;ring.push({n:i?"":"Ring truss",a:[4.4*Math.cos(a),-6.8+4.4*Math.sin(a)],b:[4.4*Math.cos(b),-6.8+4.4*Math.sin(b)],z:8})}
+  const RING=[X(1001,"par",-4.45,-5.63,P150),X(1002,"par",-3.23,-3.53,P150),X(1003,"par",-1.43,-2.43,P150),X(1004,"par",1.29,-2.38,P150),X(1005,"par",3.28,-3.57,P150),X(1006,"par",4.47,-5.70,P150),X(1007,"par",4.48,-7.86,P150),X(1008,"par",3.49,-9.80,P150),X(1009,"par",1.47,-11.16,P150),X(1010,"par",-1.43,-11.17,P150),X(1011,"par",-3.48,-9.81,P150),X(1012,"par",-4.49,-7.78,P150),X(1101,"batten",-4.17,-6.26,SL),X(1102,"batten",-3.90,-5.23,SL),X(1103,"batten",-3.37,-4.30,SL),X(1104,"batten",-2.66,-3.55,SL),X(1105,"batten",-1.64,-2.93,SL),X(1106,"batten",-0.59,-2.64,SL),X(1107,"batten",0.46,-2.63,SL),X(1108,"batten",1.47,-2.86,SL),X(1109,"batten",2.61,-3.51,SL),X(1110,"batten",3.30,-4.21,SL),X(1111,"batten",3.90,-5.25,SL),X(1112,"batten",4.18,-6.38,SL),X(1113,"batten",4.16,-7.37,SL),X(1114,"batten",3.89,-8.40,SL),X(1115,"batten",3.39,-9.28,SL),X(1116,"batten",2.60,-10.10,SL),X(1117,"batten",1.67,-10.66,SL),X(1118,"batten",0.61,-10.96,SL),X(1119,"batten",-0.54,-10.97,SL),X(1120,"batten",-1.55,-10.70,SL),X(1121,"batten",-2.58,-10.12,SL),X(1122,"batten",-3.30,-9.40,SL),X(1123,"batten",-3.90,-8.36,SL),X(1124,"batten",-4.16,-7.38,SL)];
+  const wall=[[1013,442,306],[1014,417,342],[1015,349,663],[1016,358,717],[1017,555,1029],[1018,584,1050],[1019,1145,1051],[1020,1170,1034],[1021,1373,723],[1022,1385,658],[1023,1309,332],[1024,1287,297]];
+  RIGS.roundhouse={stage:{w:10,d:6,deck:1.2},
+    note:"Redrawn from the venue's November 2025 plot (version 5). The plot says it isn't to scale, so the 10 m standard stage sets the scale here. Fixture IDs are the plot's channel numbers; the venue doesn't publish DMX addresses, so there's no patch table. The plot labels one mid-truss fixture 707, which duplicates an upstage spot, so it's left out.",
+    bars:[US,MID,FOH,CR],segs:ring,
+    fx:[...on(US,[[705,"spot",mx(713),0.15,MS],[706,"spot",mx(801),0.15,MS],[707,"spot",mx(931),0.15,MS],[708,"spot",mx(1020),0.15,MS],["052","strobe",mx(693),-0.2,AT],["013","blind",mx(713),-0.2,BL],[205,"wash",mx(762),-0.2,RG],[206,"wash",mx(844),-0.2,RG],[207,"wash",mx(889),-0.2,RG],[208,"wash",mx(972),-0.2,RG],["014","blind",mx(1019),-0.2,BL],["053","strobe",mx(1040),-0.2,AT]]),
+      ...on(MID,[[701,"spot",mx(759),0.15,MS],[702,"spot",mx(823),0.15,MS],[703,"spot",mx(910),0.15,MS],[704,"spot",mx(976),0.15,MS],[201,"wash",mx(712),-0.2,RG],["011","blind",mx(780),-0.2,BL],[202,"wash",mx(800),-0.2,RG],[203,"wash",mx(931),-0.2,RG],["012","blind",mx(953),-0.2,BL],[204,"wash",mx(1019),-0.2,RG]]),
+      ...on(FOH,[["021","prof",mx(745),0,S4],["022","prof",mx(806),0,S4],["023","prof",mx(868),0,S4],["024","prof",mx(930),0,S4],["025","prof",mx(991),0,S4],["051","strobe",mx(868),-0.3,AT]]),
+      ...on(CR,[[101,"spot",mx(775),0,M3],[102,"spot",mx(836),0,M3],[103,"spot",mx(898),0,M3],[104,"spot",mx(960),0,M3]]),
+      ...RING,
+      ...wall.map(([id,px,py])=>at(id,"par",mx(px),+((350-py)/k).toFixed(2),6,P150,"Room perimeter"))]};
+})();
+
+const OAF_PATCH=[
+ ["Universe 1"],
+ [301, "Mini B", "Extended RGBW 8 Bit", 21, 1, 1, "LX 3"],
+ [302, "Mini B", "Extended RGBW 8 Bit", 21, 1, 22, "LX 3"],
+ [303, "Mini B", "Extended RGBW 8 Bit", 21, 1, 43, "LX 3"],
+ [304, "Mini B", "Extended RGBW 8 Bit", 21, 1, 64, "LX 4"],
+ [305, "Mini B", "Extended RGBW 8 Bit", 21, 1, 85, "LX 4"],
+ [306, "Mini B", "Extended RGBW 8 Bit", 21, 1, 106, "LX 5"],
+ [307, "Mini B", "Extended RGBW 8 Bit", 21, 1, 127, "LX 5"],
+ [308, "Mini B", "Extended RGBW 8 Bit", 21, 1, 148, "LX 5"],
+ [701, "Era 300", "Standard", 21, 1, 169, "DSR"],
+ [702, "Era 300", "Standard", 21, 1, 190, "CSR"],
+ [703, "Era 300", "Standard", 21, 1, 211, "CSL"],
+ [704, "Era 300", "Standard", 21, 1, 232, "DSL"],
+ [1101, "Blinder ii C", "Extended", 29, 1, 253, "LX 4"],
+ [1102, "Blinder ii C", "Extended", 29, 1, 282, "LX 4"],
+ [1103, "Blinder ii C", "Extended", 29, 1, 311, "LX 5"],
+ [1104, "Blinder ii C", "Extended", 29, 1, 340, "LX 5"],
+ [11, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 389, "LX 1"],
+ [12, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 390, "LX 1"],
+ [13, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 391, "LX 1"],
+ [14, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 392, "LX 1 \u00b7 Top Wash"],
+ [15, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 393, "LX 4"],
+ [16, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 394, "LX 4"],
+ [17, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 395, "LX 4"],
+ [401, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 396, "DSR"],
+ [402, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 397, "DSL"],
+ [403, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 398, "USR"],
+ [404, "Birdie Par16", "Dimmer 8 Bit", 1, 1, 399, "USL"],
+ [9001, "House Festoon Red", "Dimmer 8 Bit", 1, 1, 510, "Audience"],
+ [9002, "House Festoon White", "Dimmer 8 Bit", 1, 1, 511, "Audience"],
+ ["Universe 2"],
+ [611, "FusionBar Q XII", "Extended 53 Chan", 53, 2, 1, "Floorpackage"],
+ [612, "FusionBar Q XII", "Extended 53 Chan", 53, 2, 54, "Floorpackage"],
+ [613, "FusionBar Q XII", "Extended 53 Chan", 53, 2, 107, "Floorpackage"],
+ [614, "FusionBar Q XII", "Extended 53 Chan", 53, 2, 160, "Floorpackage"],
+ [601, "FusionBar Q XII", "Extended 53 Chan", 53, 2, 213, "LX 5"],
+ [602, "FusionBar Q XII", "Extended 53 Chan", 53, 2, 266, "LX 5"],
+ [603, "FusionBar Q XII", "Extended 53 Chan", 53, 2, 319, "LX 5"],
+ [604, "FusionBar Q XII", "Extended 53 Chan", 53, 2, 372, "LX 5"],
+ [201, "ProShop Quad Par", "Extended 10 Chan", 10, 2, 425, "LX 1"],
+ [202, "ProShop Quad Par", "Extended 10 Chan", 10, 2, 435, "LX 1"],
+ [203, "ProShop Quad Par", "Extended 10 Chan", 10, 2, 445, "LX 1"],
+ [204, "ProShop Quad Par", "Extended 10 Chan", 10, 2, 455, "LX 1 \u00b7 IRGBWMMSC"],
+ [205, "ProShop Quad Par", "Extended 10 Chan", 10, 2, 465, "LX 1"],
+ [206, "ProShop Quad Par", "Extended 10 Chan", 10, 2, 475, "LX 1"],
+ ["Universe 3"],
+ [1, "LED Fresnel", "STDP", 5, 3, 1, "FOH"],
+ [2, "LED Fresnel", "STDP", 5, 3, 6, "FOH"],
+ [801, "Pixie Wash", "Extended", 16, 3, 11, "Dancefloor Stage Right"],
+ [802, "Pixie Wash", "Extended", 16, 3, 27, "Dancefloor Stage Right"],
+ [803, "Pixie Wash", "Extended", 16, 3, 43, "Dancefloor Stage Right"],
+ [804, "Pixie Wash", "Extended", 16, 3, 59, "Dancefloor Stage Right"],
+ [805, "Pixie Wash", "Extended", 16, 3, 75, "Dancefloor Stage Left"],
+ [806, "Pixie Wash", "Extended", 16, 3, 91, "Dancefloor Stage Left"],
+ [807, "Pixie Wash", "Extended", 16, 3, 107, "Dancefloor Stage Left"],
+ [808, "Pixie Wash", "Extended", 16, 3, 123, "Dancefloor Stage Left"],
+ [901, "Jet Par 7ZIP", "Extended", 20, 3, 139, "Dancefloor Bars"],
+ [902, "Jet Par 7ZIP", "Extended", 20, 3, 159, "Dancefloor Bars"],
+ [903, "Jet Par 7ZIP", "Extended", 20, 3, 179, "Dancefloor Bars"],
+ [904, "Jet Par 7ZIP", "Extended", 20, 3, 199, "Dancefloor Bars"],
+ [905, "Jet Par 7ZIP", "Extended", 20, 3, 219, "Dancefloor Bars"],
+ [906, "Jet Par 7ZIP", "Extended", 20, 3, 239, "Dancefloor Bars"],
+ [907, "Jet Par 7ZIP", "Extended", 20, 3, 259, "Dancefloor Bars"],
+ [908, "Jet Par 7ZIP", "Extended", 20, 3, 279, "Dancefloor Bars"],
+ [909, "Jet Par 7ZIP", "Extended", 20, 3, 299, "Dancefloor Bars"],
+ [910, "Jet Par 7ZIP", "Extended", 20, 3, 319, "Dancefloor Bars"],
+ [911, "Jet Par 7ZIP", "Extended", 20, 3, 339, "Dancefloor Bars"],
+ [912, "Jet Par 7ZIP", "Extended", 20, 3, 359, "Dancefloor Bars"],
+ ["Universe 4"],
+ [1011, "Strike 882", "5 Channel Mode", 5, 4, 1, "Floorpackage"],
+ [1012, "Strike 882", "5 Channel Mode", 5, 4, 6, "Floorpackage"],
+ [501, "Matrix 22", "Extended", 25, 4, 11, "Side Stage"],
+ [502, "Matrix 22", "Extended", 25, 4, 36, "Side Stage"],
+ [503, "Matrix 22", "Extended", 25, 4, 61, "Side Stage \u00b7 No Zoom"],
+ [504, "Matrix 22", "Extended", 25, 4, 86, "Side Stage"],
+ [505, "Matrix 22", "Extended", 25, 4, 111, "Side Stage"],
+ [1001, "Tambora Linear 100 Strobe", "Shape RGBW 16bit + Pixel + Strobe", 139, 4, 139, "LX 4 \u00b7 Use OAF Profile"],
+ [1002, "Tambora Linear 100 Strobe", "Shape RGBW 16bit + Pixel + Strobe", 139, 4, 278, "LX 4 \u00b7 Pixel orientation SR > SL"]
+];
+const OAF_FX=[at(301,"wash",-1.50,2.59,1.79,"Mini B","LX 3"),
+ at(302,"wash",0.00,2.59,1.79,"Mini B","LX 3"),
+ at(303,"wash",1.50,2.59,1.79,"Mini B","LX 3"),
+ at(304,"wash",-0.70,2.99,1.69,"Mini B","LX 4"),
+ at(305,"wash",0.70,2.99,1.69,"Mini B","LX 4"),
+ at(306,"wash",-1.10,3.99,1.69,"Mini B","LX 5"),
+ at(307,"wash",0.00,3.99,1.69,"Mini B","LX 5"),
+ at(308,"wash",1.10,3.99,1.69,"Mini B","LX 5"),
+ at(701,"spot",-1.84,2.33,1.91,"Era 300","DSR"),
+ at(702,"spot",-1.00,2.82,1.91,"Era 300","CSR"),
+ at(703,"spot",1.00,2.82,1.91,"Era 300","CSL"),
+ at(704,"spot",1.84,2.33,1.91,"Era 300","DSL"),
+ at(1101,"blind",-0.82,2.54,1.84,"Blinder ii C","LX 4"),
+ at(1102,"blind",-0.50,4.04,1.57,"Blinder ii C","LX 4"),
+ at(1103,"blind",0.50,4.04,1.57,"Blinder ii C","LX 5"),
+ at(1104,"blind",0.82,2.54,1.84,"Blinder ii C","LX 5"),
+ at(11,"par",-1.50,0.35,1.78,"Birdie Par16","LX 1"),
+ at(12,"par",-0.24,0.35,1.78,"Birdie Par16","LX 1"),
+ at(13,"par",0.24,0.35,1.78,"Birdie Par16","LX 1"),
+ at(14,"par",1.50,0.35,1.78,"Birdie Par16","LX 1"),
+ at(15,"par",-1.25,2.57,1.79,"Birdie Par16","LX 4"),
+ at(16,"par",0.00,3.07,1.77,"Birdie Par16","LX 4"),
+ at(17,"par",1.25,2.57,1.79,"Birdie Par16","LX 4"),
+ at(401,"par",-2.55,0.70,1.17,"Birdie Par16","DSR"),
+ at(402,"par",-2.38,2.99,1.50,"Birdie Par16","DSL"),
+ at(403,"par",2.37,2.99,1.50,"Birdie Par16","USR"),
+ at(404,"par",2.44,0.51,1.17,"Birdie Par16","USL"),
+ at(611,"batten",-1.50,4.18,0.10,"FusionBar Q XII","Floorpackage"),
+ at(612,"batten",-0.50,4.18,0.10,"FusionBar Q XII","Floorpackage"),
+ at(613,"batten",0.50,4.18,0.10,"FusionBar Q XII","Floorpackage"),
+ at(614,"batten",1.50,4.18,0.10,"FusionBar Q XII","Floorpackage"),
+ at(601,"batten",-1.50,3.94,1.79,"FusionBar Q XII","LX 5"),
+ at(602,"batten",-0.50,3.94,1.79,"FusionBar Q XII","LX 5"),
+ at(603,"batten",0.50,3.94,1.79,"FusionBar Q XII","LX 5"),
+ at(604,"batten",1.50,3.94,1.79,"FusionBar Q XII","LX 5"),
+ at(201,"par",-1.77,0.42,1.75,"ProShop Quad Par","LX 1"),
+ at(202,"par",-1.20,0.42,1.75,"ProShop Quad Par","LX 1"),
+ at(203,"par",-0.62,0.42,1.75,"ProShop Quad Par","LX 1"),
+ at(204,"par",0.62,0.42,1.75,"ProShop Quad Par","LX 1"),
+ at(205,"par",1.20,0.42,1.75,"ProShop Quad Par","LX 1"),
+ at(206,"par",1.77,0.42,1.75,"ProShop Quad Par","LX 1"),
+ at(1,"fres",-2.41,-2.21,1.58,"LED Fresnel","FOH"),
+ at(2,"fres",2.41,-2.21,1.57,"LED Fresnel","FOH"),
+ at(801,"wash",-2.60,-1.35,1.79,"Pixie Wash","Dancefloor Stage Right"),
+ at(802,"wash",-2.60,-3.49,1.79,"Pixie Wash","Dancefloor Stage Right"),
+ at(803,"wash",-2.60,-5.08,1.79,"Pixie Wash","Dancefloor Stage Right"),
+ at(804,"wash",-2.60,-6.66,1.79,"Pixie Wash","Dancefloor Stage Right"),
+ at(805,"wash",2.60,-1.35,1.79,"Pixie Wash","Dancefloor Stage Left"),
+ at(806,"wash",2.60,-3.49,1.79,"Pixie Wash","Dancefloor Stage Left"),
+ at(807,"wash",2.60,-5.08,1.79,"Pixie Wash","Dancefloor Stage Left"),
+ at(808,"wash",2.60,-6.66,1.79,"Pixie Wash","Dancefloor Stage Left"),
+ at(901,"par",-1.78,-0.36,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(902,"par",0.00,-0.36,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(903,"par",1.78,-0.36,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(904,"par",-1.78,-2.40,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(905,"par",0.00,-2.40,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(906,"par",1.78,-2.40,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(907,"par",-1.78,-4.63,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(908,"par",0.00,-4.63,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(909,"par",1.78,-4.63,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(910,"par",-1.78,-6.76,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(911,"par",0.00,-6.76,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(912,"par",1.78,-6.76,1.79,"Jet Par 7ZIP","Dancefloor Bars"),
+ at(1001,"strobe",-1.68,3.07,1.65,"Tambora Linear 100 Strobe","LX 4"),
+ at(1002,"strobe",1.70,3.07,1.65,"Tambora Linear 100 Strobe","LX 4")];
+/* not in the MVR: 9001 House Festoon Red (Audience); 9002 House Festoon White (Audience); 1011 Strike 882 (Floorpackage); 1012 Strike 882 (Floorpackage); 501 Matrix 22 (Side Stage); 502 Matrix 22 (Side Stage); 503 Matrix 22 (Side Stage \u00b7 No Zoom); 504 Matrix 22 (Side Stage); 505 Matrix 22 (Side Stage) */
+const OAFG_PATCH=[
+ ["Universe 1"],
+ [701, "EK E3 Spot", "18Channel Mode", 18, 1, 1, "Flown Stage"],
+ [702, "EK E3 Spot", "18Channel Mode", 18, 1, 19, "Flown Stage"],
+ [703, "EK E3 Spot", "18Channel Mode", 18, 1, 37, "Flown Stage"],
+ [704, "EK E3 Spot", "18Channel Mode", 18, 1, 55, "Flown Stage"],
+ [705, "EK E3 Spot", "18Channel Mode", 18, 1, 73, "Flown Stage"],
+ [706, "EK E3 Spot", "18Channel Mode", 18, 1, 91, "Flown Stage"],
+ ["Universe 2"],
+ [601, "FusionBar Q XII", "Pixel 48 Chan", 48, 2, 1, "Flown Stage"],
+ [602, "FusionBar Q XII", "Pixel 48 Chan", 48, 2, 49, "Flown Stage"],
+ [603, "FusionBar Q XII", "Pixel 48 Chan", 48, 2, 97, "Flown Stage"],
+ [604, "FusionBar Q XII", "Pixel 48 Chan", 48, 2, 145, "Flown Stage"],
+ [605, "FusionBar Q XII", "Pixel 48 Chan", 48, 2, 193, "Flown Stage"],
+ [606, "FusionBar Q XII", "Pixel 48 Chan", 48, 2, 241, "Flown Stage"],
+ [611, "FusionBar Q XII", "Pixel 48 Chan", 48, 2, 289, "Dancefloor"],
+ [612, "FusionBar Q XII", "Pixel 48 Chan", 48, 2, 337, "Dancefloor"],
+ [613, "FusionBar Q XII", "Pixel 48 Chan", 48, 2, 385, "Dancefloor"],
+ [614, "FusionBar Q XII", "Pixel 48 Chan", 48, 2, 433, "Dancefloor"],
+ [11, "Blinder ii", "Extended 7 Chan", 7, 2, 481, "Flown Stage"],
+ [12, "Blinder ii", "Extended 7 Chan", 7, 2, 488, "Flown Stage"],
+ [1, "LED Profile WW", "Dimmer 8 Bit", 1, 2, 495, "FOH"],
+ [2, "LED Profile WW", "Dimmer 8 Bit", 1, 2, 496, "FOH"],
+ [1001, "Stage Festoon", "Dimmer 8 Bit", 1, 2, 501, "Stage"],
+ [1002, "Room Festoon", "Dimmer 8 Bit", 1, 2, 502, "Dancefloor"]
+];
+
+(()=>{ /* Oxford Art Factory Main Room: every flown fixture placed from the venue's May 2026 MVR (positions in mm, downstage edge taken as 2.3 m into the model) */
+  const z1=1.84,z2=1.74;
+  const L1=bar("LX1",0.39,z1,-2.4,2.4),L2=bar("LX2",0.79,z1,-2.4,2.4),L3=bar("LX3",2.59,z1,-2.4,2.4),L4=bar("LX4",2.99,z2,-2.4,2.4),L5=bar("LX5",3.99,z2,-2.4,2.4);
+  const D1=bar("Dancefloor 1",-0.36,z1,-2.1,2.1),D2=bar("Dancefloor 2",-2.4,z1,-2.1,2.1),D3=bar("Dancefloor 3",-4.63,z1,-2.1,2.1),D4=bar("Dancefloor 4",-6.76,z1,-2.1,2.1);
+  RIGS.oaf={stage:{w:4.8,d:4.2,deck:0.9},
+    note:"Placed from the venue's May 2026 MVR, which holds every flown fixture's real position, with names, modes and addresses from the January 2026 patch. The MVR doesn't include the two Strike 882 floor strobes or the five Matrix 22s on the side stage, so those are placed approximately; the house festoons are in the patch only. Floor package positions are shown on the stage floor.",
+    bars:[D4,D3,D2,D1,L1,L2,L3,L4,L5],
+    fx:[...OAF_FX,
+      at(1011,"strobe",-1.0,3.9,0.1,"Strike 882","Floor package"),at(1012,"strobe",1.0,3.9,0.1,"Strike 882","Floor package"),
+      ...[501,502,503,504,505].map((id,i)=>at(id,"wash",-3.3,0.2+i*0.5,1.5,"Matrix 22","Side stage (approx.)"))]};
+})();
+
+VENUES.push(
+{ id:"crh", tab:"City Recital Hall", name:"City Recital Hall", addr:"2 Angel Place, Sydney NSW",
+  chips:[["ok","Spec: June 2026"],["ok","Patch: 17 April 2026"],["ok","Plot: 2026 (v2.1)"]],
+  contact:"City Recital Hall's technical team",
+  stats:[["1,264","Seated capacity"],["13 / 11 m","Stage width DS / US"],["7 m","Stage depth (10 m with extension)"],["1 m","Stage height"],["12.3 m","Stage to ceiling"],["20 \u00d7 1 t","Chain motors"]],
+  rig:{title:"House rig",src:"City Recital Hall technical specifications, June 2026",
+    groups:[["Control",["ETC Apex 5 (grandMA3 Light due 2027)","ETC Gio as secondary","Pathport Octo nodes in the control room, grid and stage"]],
+            ["Moving lights",[["6","Martin MAC Encore Two"],["12","Martin MAC Encore Performance CLD"],["12","Clay Paky Mini-B"]]],
+            ["Conventional and LED",[["20","ProLights EclProfile CT+"],["12","ETC Source 4 LED Lustr+"],["14","ETC Source 4 750 W"],["8","ETC Source 4 Jr zoom"],["10","Selecon Pacific"],["","ARRI L7-C, ProLights EclFresnel, Selecon Arena 2K PC"]]],
+            ["Dimming",["13 LSC Gen VI racks in the dimmer room, 156 circuits","4 more at LX Bridges 1 and 2, 3 at the grid","Paradigm house lights, DMX controllable"]]]},
+  patch:{rows:CRH_PATCH,title:"Patch (17 April 2026)",src:"City Recital Hall technical specifications, June 2026, pp. 38\u201339"},
+  drawings:[["img/crh-plot.png","Standard lighting rig 2026, v2.1","Hatches, LX bridges, FOH trusses, LX1 and LX2."],["img/crh-patch-1.png","Standard patch, page 1","Hatches 1\u20133 and FOH Bridge 1."],["img/crh-patch-2.png","Standard patch, page 2","FOH Bridge 2 and the under-box positions."],["img/crh-patch-3.png","Standard patch, page 3","FOH trusses, LX1, LX2, circle bar and floor."]],
+  info:[["Stage",[["Width","13 m at the downstage line, 11 m upstage"],["Depth","7 m; 8, 9 or 10 m with extensions"],["Surface","Rock maple, no tape, screws or spikes"],["DS edge to upstage rigging line","6.6 m"],["Centre line to walls","5.5 m each side"]]],
+        ["Rigging",[["Motors","20 \u00d7 1 t D8+ in four bays (two over stage, two over the house)"],["Lines","12 four-point pick-ups across the stage"],["Battens","3 \u00d7 11 m flat truss"],["Batten drift","11.9 m (Bay 4) to 18 m (Bay 1)"]]],
+        ["Lighting positions (throw from setting line)",[["Hatch 2","13.5 m, 11 m bar, covers the whole stage"],["Hatch 3","15 m, 2 \u00d7 4 m bars"],["Hatch 1","16 m, 2 \u00d7 4.5 m bars"],["LX Bridge 1 / FOH Truss 1","19 m"],["LX Bridge 2","24.5 m"],["Under-balcony bar","23.5 m, 15 m long"]]]],
+  sources:[["City Recital Hall technical specifications, June 2026","https://www.cityrecitalhall.com/media/obbggnce/city-recital-hall-venue-technical-specifications-june-2026.pdf","PDF, 39 pp"],["Technical specifications page","https://www.cityrecitalhall.com/technical-specifications/","Web"]]},
+
+{ id:"roundhouse", tab:"UNSW Roundhouse", name:"UNSW Roundhouse", addr:"UNSW Kensington campus, Anzac Parade, Kensington NSW",
+  chips:[["ok","Info pack: January 2026"],["ok","Plot: November 2025 (v5)"],["bad","No published patch"]],
+  contact:"the Roundhouse production manager (production@arc.unsw.edu.au)",
+  stats:[["2,200","Full venue capacity"],["1,250","Main room only"],["10 \u00d7 6 m","Standard stage build"],["1.2 m","Max stage height"],["grandMA3","Light"],["d&b V","Flown PA"]],
+  rig:{title:"House rig",src:"Roundhouse information pack, January 2026, and plot v5",
+    groups:[["Control",["grandMA3 Light","All truss and bars are on motors"]],
+            ["Fixtures (IDs and modes from the plot)",[["4","Chauvet Maverick Force 3 Profile, 101\u2013104, 53ch"],["8","Chauvet Maverick Force S Profile, 701\u2013708, 47ch"],["8","Chauvet Rogue R2 Wash, 201\u2013208, 33ch"],["24","Showline Par 150 Zoom, 1001\u20131024, 6ch"],["24","Showline SL Bar 510, 1101\u20131124, 6ch"],["4","Show Technology LED Blinder, 011\u2013014, 4ch"],["5","ETC Source Four LED S2, 021\u2013025, 6ch"],["3","Martin Atomic, 051\u2013053, 10ch"],["2","Look Solutions Unique hazers, 1201\u20131202"]]],
+            ["Also listed",["2K and 1K fresnels","Chauvet COLORdash Par-Quad 7, PR Lighting LED flat pars","Epson EB1300 projector"]]]},
+  patch:{rows:[],title:"Patch",src:"None published"},
+  drawings:[["img/roundhouse-plot.png","Lighting plot, November 2025 (v5)","Stage trusses, FOH truss, centre ring and the room's perimeter positions."],["img/roundhouse-ring.png","Centre ring truss detail","Par 150 Zooms and SL Bar 510s around the ring."]],
+  info:[["Audio",[["PA","d&b V-Series: 6 \u00d7 Vi8 and 2 \u00d7 Vi12 per side, 6 \u00d7 B22 subs"],["Fills","4 \u00d7 E8 front, V7 out and VIP fills, 3 \u00d7 E8 bar fill"],["FOH and monitors","DiGiCo SD12 (Stealth 2 core) each, XTA MX36 switcher"],["Foldback","10 \u00d7 d&b M4 on 8 sends, 2 \u00d7 B6 subs"]]],
+        ["Venue",[["Configurations","Full venue 2,200; main room and balcony 1,500; theatre style 900 seated"],["Staging","60 m\u00b2 ProStage modular, up to 1.2 m"],["Drapes","Black wool curtain track around the main room"],["DJ","4 \u00d7 CDJ-3000, 4 \u00d7 CDJ-2000, DJM-A9, DJM-V10, 2 \u00d7 DJM-900NXS2"]]]],
+  sources:[["Roundhouse information pack, January 2026","https://www.arc.unsw.edu.au/uploads/RH237527%20RH%20Home%20of%20Good%20Times%20-%20Infomation%20Pack%20Jan%20Updates_V03.pdf","PDF, 10 pp"],["Roundhouse corporate information pack, 2023","https://www.arc.unsw.edu.au/uploads/RH%20Corporate%20Information%20Pack%20.pdf","PDF, 9 pp"]]},
+
+{ id:"oaf", tab:"OAF Main Room", name:"Oxford Art Factory, Main Room", addr:"38\u201346 Oxford Street, Darlinghurst NSW",
+  chips:[["ok","Patch: January 2026"],["ok","MVR: May 2026"],["ok","Plot: December 2025"]],
+  contact:"OAF's lighting production manager (lighting@oxfordartfactory.com)",
+  stats:[["4.8 \u00d7 4.2 m","Stage W \u00d7 D"],["900 mm","Stage height"],["2.4\u20132.9 m","Stage to ceiling"],["5","Flown LX pipes on stage"],["grandMA3","onPC + Command Wing"],["4","DMX universes"]],
+  rig:{title:"House rig",src:"OAF Main Room venue lighting spec, December 2025",
+    groups:[["Control and data",["grandMA3 onPC with Command Wing, mini PC and Dell 24-inch touchscreen","Luminex Luminode 12; 3 ports free for touring packages via splitter","2 Cat5 tie lines FOH to stage, which audio may be using","No LX network switches: bring your own"]],
+            ["Stage fixtures",[["8","Clay Paky Mini-B (Mode 3 only)"],["4","Martin ERA 300 Profile"],["4","ShowPro FusionBar Q XII"],["2","Clay Paky Tambora Linear 100"],["4","EK Blinder II C"],["11","PAR16 birdies"],["2","ShowPro LED fresnel WW"],["6","RGBW LED par (ShowPro Quad-12)"]]],
+            ["Floor, dance floor and DJ",[["4","FusionBar Q XII floor package"],["2","Chauvet Strike 882"],["8","ProLights Pixie Wash"],["12","ProLights JetPar 7ZIP"],["5","BeamZ Matrix 22 on the DJ stage"],["1","Unique 2.1 hazer"]]],
+            ["Power and rigging",["Isolated LX mains for the house rig; 3-phase outlet for touring","Jands 12-way dimmer rack for house conventionals","5 \u00d7 2-inch flown LX pipes on stage; 12 girder clamps over the dance floor","No overhead rigging over the audience; flown packages can't be changed"]]]},
+  patch:{rows:OAF_PATCH,title:"Patch (January 2026)",src:"OAF Main Room lighting patch sheet, January 2026"},
+  drawings:[["img/oaf-plot.png","Main Room LX plot, December 2025","Stage pipes, dance floor bars and wall positions, with the venue's network IPs."]],
+  info:[["Audio",[["FOH","DiGiCo SD12, D2 rack, Waves card; monitors from FOH"],["PA","4 \u00d7 d&b Yi8, 4 \u00d7 Yi12, Yi10 centre, 4 \u00d7 Y-Sub, SL-GSub"],["Monitors","6 \u00d7 d&b M6, MAX2 drum top, B6 drum sub"],["Power","1 \u00d7 3-phase outlet"]]],
+        ["Show day",[["Load in","Rear lane, 3 Norman Street; no rear load out after 8 pm"],["Load out","Through the Oxford Street entrance"],["Noise limit","103 dBA at FOH"],["Effects","Room can be isolated for haze; lasers by advance only; no glitter"]]]],
+  sources:[["OAF Main Room lighting patch sheet, January 2026","Supplied pack: 01_MainRoom/Lighting/2601OAF_DMXpatch.pdf","PDF"],["OAF Main Room MVR, May 2026","Supplied pack: 01_MainRoom/Lighting/2605_OAF MVR.mvr","MVR"],["OAF Main Room LX plot, December 2025","Supplied pack: 01_MainRoom/Lighting/2512OAF_MainRoomLXPlot.pdf","PDF"],["OAF Main Room production spec, November 2023 (public)","https://oxfordartfactory.com/site/wp-content/uploads/2023/12/OAF-MAIN-ROOM-TECH-SPECS-.pdf","PDF"]]},
+
+{ id:"oafg", tab:"OAF Gallery Bar", name:"Oxford Art Factory, Gallery Bar", addr:"38\u201346 Oxford Street, Darlinghurst NSW",
+  chips:[["ok","Patch: January 2025"],["ok","Spec: January 2025"],["bad","No plot"]],
+  contact:"OAF's lighting production manager (lighting@oxfordartfactory.com)",
+  noPlot:"The Gallery Bar pack has a patch and spec but no plot or MVR, so there's no plan or 3D view. Fixture positions are in the patch's position column.",
+  stats:[["22","Patched channels"],["2","DMX universes to stage"],["10 A","One GPO, no LX power"],["grandMA2","onPC + Command Wing"]],
+  rig:{title:"House rig",src:"OAF Gallery Bar LX spec, January 2025",
+    groups:[["Stage fixtures",[["6","EK E3 Spot"],["6","ShowPro FusionBar Q XII"],["2","LED Source 4 WW front wash"],["2","EK Blinder II (strobe substitute)"],["1","Halogen festoon array with droppers"]]],
+            ["Dance floor",[["4","ShowPro FusionBar Q XII"],["1","Antari Z350 faze machine; no other atmospherics"]]],
+            ["Control and power",["grandMA2 onPC with Command Wing, Dell touchscreen","2 DMX universes to stage, 4-way splitter; Luminode 4 for touring floor packages","Jands 4-way dimmer pack runs the festoons and bar room lights: don't patch past 2.502","1 GPO downstage left; no dedicated LX power, no rigging for extra fixtures"]]]},
+  patch:{rows:OAFG_PATCH,title:"Patch (January 2025)",src:"OAF Gallery Bar lighting patch sheet, January 2025"},
+  drawings:[],
+  info:[["Audio",[["FOH","Avid SC48, monitors from FOH"],["PA","2 \u00d7 d&b Vi7P, 2 \u00d7 V-Sub flown"],["Monitors","6 \u00d7 Martin LE1200, F15 drum wedge"]]],
+        ["Vision",[["Stage","BenQ projector, pull-down screen upstage"],["Walls","5 projectors focused on the walls; advance with lighting"]]]],
+  sources:[["OAF Gallery Bar lighting patch sheet, January 2025","Supplied pack: 02_GalleryBar/Lighting/OAF_GalleryBarLXPatch_2025.pdf","PDF"],["OAF Gallery Bar LX spec, January 2025","Supplied pack: 02_GalleryBar/Lighting/OAF_LXSpec_Gallery2501.pdf","PDF"],["OAF Gallery Bar production spec, November 2023 (public)","https://oxfordartfactory.com/site/wp-content/uploads/2023/12/OAF-GALLERY-BAR-TECH-SPECS-2023.pdf","PDF"]]}
+);
+
+function patchIndex(rows){const m=new Map();for(const r of rows)if(r.length>1)m.set(String(r[0]),r);return m}
+/* An imported MA3 patch may number fixtures differently from the venue plot, so only link a plot fixture
+   to an imported row when the fixture types share a name token. */
+const KIND_SKIP=new Set(["stage","acme","colour","color","pro","led","mode","channel","the","chauvet","ckc","tourpro","ip","std"]);
+const kindTokens=s=>String(s).toLowerCase().split(/[^a-z0-9]+/).filter(t=>t.length>=3&&!KIND_SKIP.has(t)&&!/^\d+$/.test(t));
+function sameKind(a,b){const A=kindTokens(a),B=kindTokens(b);return A.some(x=>B.some(y=>x.includes(y)||y.includes(x)))}
+function rowFor(v,idx,f){const row=idx.get(String(f.id));if(!row)return null;if(IMPORTED[v.id]&&!sameKind(f.name,row[1]))return null;return row}
+const cssVar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fxPos=f=>f.pos||f.bar||"";
+
+/* ---------- 2D plan (SVG) ---------- */
+function symbol(t){switch(t){
+  case"spot":return`<rect class="sym" x="-9" y="-4" width="18" height="8" rx="2" style="fill:var(--truss)"/><circle class="sym" r="7" style="fill:var(--t-spot)"/>`;
+  case"wash":return`<circle class="sym" r="8" style="fill:var(--t-wash)"/><circle r="3.2" style="fill:var(--panel)"/>`;
+  case"par":return`<rect class="sym" x="-5" y="-7" width="10" height="14" rx="4" style="fill:var(--t-par)"/>`;
+  case"fres":return`<rect class="sym" x="-7" y="-7" width="14" height="14" rx="2" style="fill:var(--t-fres)"/><path d="M-4 3 Q0 -3 4 3" style="fill:none;stroke:var(--panel);stroke-width:1.6"/>`;
+  case"prof":return`<rect class="sym" x="-4.5" y="-10" width="9" height="20" rx="1.5" style="fill:var(--t-prof)"/><rect x="-6" y="-2" width="12" height="4" style="fill:var(--t-prof)"/>`;
+  case"blind":return`<rect class="sym" x="-10" y="-5" width="20" height="10" rx="2" style="fill:var(--t-blind)"/><circle cx="-4.5" r="2.4" style="fill:var(--panel)"/><circle cx="4.5" r="2.4" style="fill:var(--panel)"/>`;
+  case"strobe":return`<rect class="sym" x="-11" y="-4" width="22" height="8" rx="1.5" style="fill:var(--t-strobe)"/><rect x="-8" y="-1.2" width="16" height="2.4" style="fill:var(--panel)"/>`;
+  case"haze":return`<rect class="sym" x="-9" y="-7" width="18" height="14" rx="2" style="fill:var(--t-haze)"/><text y="3.5" text-anchor="middle" style="fill:var(--panel);font:600 9px var(--mono)">HZ</text>`;
+  case"proj":return`<rect class="sym" x="-10" y="-7" width="20" height="14" rx="2" style="fill:var(--t-proj)"/><circle cx="4" r="3" style="fill:var(--panel)"/>`;
+  case"batten":return`<rect class="sym" x="-14" y="-3" width="28" height="6" rx="1" style="fill:var(--t-batten)"/>`;
+  case"mate":return`<rect class="sym" x="-5.5" y="-5.5" width="11" height="11" transform="rotate(45)" style="fill:var(--t-mate)"/>`;
+}}
+function planSVG(v){
+  const r=RIGS[v.id],idx=noLookup(v)?new Map():patchIndex(patchFor(v)),py=b=>b.planY??b.y;
+  const xs=[],ys=[];
+  r.bars.forEach(b=>{xs.push(b.x0,b.x1);ys.push(py(b))});(r.segs||[]).forEach(s=>{xs.push(s.a[0],s.b[0]);ys.push(s.a[1],s.b[1])});
+  r.fx.forEach(f=>{xs.push(f.x);ys.push(f.planY??f.y)});
+  if(r.stage){xs.push(-r.stage.w/2,r.stage.w/2);ys.push(0,r.stage.d)}
+  const minX=Math.min(...xs)-0.9,maxX=Math.max(...xs)+3.3,minY=Math.min(...ys)-0.9,maxY=Math.max(...ys)+0.8;
+  const s=56,W=Math.round((maxX-minX)*s),H=Math.round((maxY-minY)*s)+20;
+  const X=x=>((x-minX)*s).toFixed(1),Y=y=>((maxY-y)*s+10).toFixed(1);
+  let g=`<defs><pattern id="truss" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M0 12 L12 0" style="stroke:var(--truss);stroke-width:1"/></pattern></defs>`;
+  for(let x=Math.ceil(minX);x<=Math.floor(maxX-2.6);x++)g+=`<line class="pl-grid" x1="${X(x)}" x2="${X(x)}" y1="0" y2="${H}"/>`;
+  for(let y=Math.ceil(minY);y<=Math.floor(maxY);y++)g+=`<line class="pl-grid" x1="0" x2="${X(maxX-2.6)}" y1="${Y(y)}" y2="${Y(y)}"/>`;
+  if(r.stage){const st=r.stage;g+=`<rect class="pl-deck" x="${X(-st.w/2)}" y="${Y(st.d)}" width="${(st.w*s).toFixed(1)}" height="${(st.d*s).toFixed(1)}"/>`;
+    g+=`<text class="pl-small" x="${X(-st.w/2)}" y="${(+Y(0)+16).toFixed(1)}">DSE \u00b7 stage ${st.w} \u00d7 ${st.d} m</text>`}
+  if(r.pros){const p=r.pros,t=0.3*s;[[-r.stage.w/2-0.8,-p.w/2],[p.w/2,r.stage.w/2+0.8]].forEach(([a,b])=>g+=`<rect class="pl-wall" x="${X(a)}" y="${(+Y(p.y)-t/2).toFixed(1)}" width="${((b-a)*s).toFixed(1)}" height="${t.toFixed(1)}"/>`);
+    g+=`<text class="pl-small" x="${X(-r.stage.w/2-0.7)}" y="${(+Y(p.y)+t/2+14).toFixed(1)}">Proscenium ${p.w} m</text>`}
+  g+=`<line class="pl-cl" x1="${X(0)}" x2="${X(0)}" y1="0" y2="${H}"/><text class="pl-dim" x="${(+X(0)+5).toFixed(1)}" y="${H-6}">CL</text>`;
+  if(r.planBreak!==false&&r.bars.some(b=>b.planY!=null))r.bars.filter(b=>b.planY!=null).forEach(b=>g+=`<text class="pl-small" x="${X(b.x0)}" y="${(+Y(b.planY)+34).toFixed(1)}">Not to scale on this plan \u00b7 ${esc(b.dimNote||"")}</text>`);
+  (r.segs||[]).forEach(sg=>{g+=`<line class="pl-seg" x1="${X(sg.a[0])}" y1="${Y(sg.a[1])}" x2="${X(sg.b[0])}" y2="${Y(sg.b[1])}"/>`;if(sg.n)g+=`<text class="pl-lab" x="${(+X(sg.b[0])+14).toFixed(1)}" y="${(+Y(sg.b[1])+5).toFixed(1)}">${esc(sg.n.toUpperCase())}</text>`});
+  r.bars.forEach(b=>{const h=0.2*s,yy=py(b);g+=`<rect class="pl-bar" x="${X(b.x0)}" y="${(+Y(yy)-h/2).toFixed(1)}" width="${((b.x1-b.x0)*s).toFixed(1)}" height="${h.toFixed(1)}"/>`;
+    const lx=+X(Math.max(...r.bars.map(q=>q.x1),...(r.segs||[]).map(q=>Math.max(q.a[0],q.b[0]))))+16;
+    g+=`<text class="pl-lab" x="${lx.toFixed(1)}" y="${(+Y(yy)+1).toFixed(1)}">${esc(b.n.toUpperCase())}</text>`;
+    if(r.stage)g+=`<text class="pl-dim" x="${lx.toFixed(1)}" y="${(+Y(yy)+16).toFixed(1)}">${b.planY!=null?esc(b.dimNote):(b.y>=0?"+":"")+b.y.toFixed(1)+" m"} \u00b7 trim ~${b.z} m</text>`});
+  const below=new Set();{const seen=[...r.fx].sort((a,b)=>(a.y-b.y)||(a.x-b.x));let prev=null;for(const f of seen){if(prev&&Math.abs(prev.y-f.y)<0.01&&Math.abs(f.x-prev.x)*s<30&&!below.has(prev))below.add(f);prev=f}}
+  const FOC=r.focus||{};
+  r.fx.forEach(f=>{const fo=FOC[f.id];if(!fo)return;const x1=X(f.x),y1=Y(f.planY??f.y),x2=X(fo.x),y2=Y(fo.y);
+    g+=`<line class="pl-focus" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><circle class="pl-ftarget" cx="${x2}" cy="${y2}" r="3.5"/>`});
+  r.fx.forEach(f=>{const row=rowFor(v,idx,f),addr=row?`${row[4]}.${row[5]}`:"",yy=f.planY??f.y;
+    const label=`${f.id} \u00b7 ${f.name}${addr?" \u00b7 "+addr:""} \u00b7 ${fxPos(f)}${FOC[f.id]?" \u00b7 Focus: "+FOC[f.id].label:""}`;
+    g+=`<g class="fx" data-fid="${esc(f.id)}" tabindex="0" role="button" aria-label="${esc(label)}" transform="translate(${X(f.x)} ${Y(yy)})"><title>${esc(label)}</title><circle class="ring" r="13"/>${symbol(f.t)}<text class="pl-id" y="${below.has(f)?22:-12}">${esc(f.id)}</text></g>`});
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Lighting plan for ${esc(v.name)}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
+function legend(r){const c={};r.fx.forEach(f=>c[f.t]=(c[f.t]||0)+1);
+  return `<div class="legend">${Object.keys(TYPES).filter(t=>c[t]).map(t=>`<span><svg viewBox="-12 -11 24 22" aria-hidden="true">${symbol(t)}</svg>${esc(TYPES[t])} <b style="color:var(--ink)">${c[t]}</b></span>`).join("")}</div>`}
+
+/* ---------- 3D view (three.js) ---------- */
+let kill3D=null;
+let spinPref=!matchMedia("(prefers-reduced-motion: reduce)").matches;
+try{const s=localStorage.getItem("spin");if(s!==null)spinPref=s==="1"}catch(_){}
+function mount3D(host,v,onPick,onSpin){
+  if(!window.THREE){host.innerHTML=`<div class="empty">The 3D view needs three.js, which didn't load.</div>`;return()=>{}}
+  const T=THREE,r=RIGS[v.id],idx=noLookup(v)?new Map():patchIndex(patchFor(v));
+  const renderer=new T.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));host.appendChild(renderer.domElement);
+  const tip=document.createElement("div");tip.className="tip";tip.hidden=true;host.appendChild(tip);
+  const hint=document.createElement("div");hint.className="hint";hint.textContent="Drag to orbit \u00b7 hover a fixture";host.appendChild(hint);
+  const scene=new T.Scene(),col=n=>new T.Color(cssVar(n)||"#888");
+  scene.add(new T.HemisphereLight(0xffffff,0x445566,0.95));const dl=new T.DirectionalLight(0xffffff,0.6);dl.position.set(4,10,8);scene.add(dl);
+  const P=(x,y,z)=>new T.Vector3(x,z,-y);
+  const deckMat=new T.MeshStandardMaterial({color:col("--deck"),roughness:.9}),edgeMat=new T.LineBasicMaterial({color:col("--deck-edge")});
+  const trussMat=new T.MeshStandardMaterial({color:col("--truss"),metalness:.4,roughness:.5});
+  const st=r.stage||{w:9,d:8,deck:0.5},cy=st.d/2;
+  const deck=new T.Mesh(new T.BoxGeometry(st.w,st.deck,st.d),deckMat);deck.position.copy(P(0,cy,-st.deck/2));scene.add(deck);
+  const de=new T.LineSegments(new T.EdgesGeometry(deck.geometry),edgeMat);de.position.copy(deck.position);scene.add(de);
+  const floor=new T.Mesh(new T.PlaneGeometry(60,60),new T.MeshStandardMaterial({color:col("--grid"),roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-st.deck-0.001;scene.add(floor);
+  const grid=new T.GridHelper(60,60,col("--deck-edge"),col("--line"));grid.position.y=-st.deck;grid.material.opacity=.35;grid.material.transparent=true;scene.add(grid);
+  if(r.pros){const p=r.pros,wm=new T.MeshStandardMaterial({color:col("--deck-edge"),transparent:true,opacity:.35});
+    [-1,1].forEach(sg=>{const w=1.6,m=new T.Mesh(new T.BoxGeometry(w,p.h+st.deck,0.3),wm);m.position.copy(P(sg*(p.w/2+w/2),p.y,(p.h-st.deck)/2));scene.add(m)})}
+  const label=(text,pos)=>{const c=document.createElement("canvas");c.width=256;c.height=64;const x=c.getContext("2d");x.font="600 34px Barlow Condensed, Arial Narrow, sans-serif";x.fillStyle=cssVar("--ink");x.textBaseline="middle";x.fillText(text,6,32);
+    const sp=new T.Sprite(new T.SpriteMaterial({map:new T.CanvasTexture(c),depthTest:false,transparent:true}));sp.scale.set(2,0.5,1);sp.position.copy(pos);scene.add(sp)};
+  const addBeam=(a,b,len)=>{const g=new T.BoxGeometry(0.3,0.3,len);g.translate(0,0,len/2);const m=new T.Mesh(g,trussMat);m.position.copy(a);m.lookAt(b);scene.add(m);
+    const e=new T.LineSegments(new T.EdgesGeometry(g),new T.LineBasicMaterial({color:col("--ink"),transparent:true,opacity:.25}));e.position.copy(a);e.lookAt(b);scene.add(e)};
+  r.bars.forEach(b=>{const a=P(b.x0,b.y,b.z),c=P(b.x1,b.y,b.z);addBeam(a,c,b.x1-b.x0);label(b.n,P(b.x1+1.3,b.y,b.z+0.1))});
+  (r.segs||[]).forEach(sg=>{const a=P(sg.a[0],sg.a[1],sg.z),c=P(sg.b[0],sg.b[1],sg.z);addBeam(a,c,a.distanceTo(c));if(sg.n)label(sg.n,P(sg.b[0],sg.b[1]+0.6,sg.z+0.3))});
+  const picks=[],beams=[];
+  const mats={};const matFor=t=>mats[t]||(mats[t]=new T.MeshStandardMaterial({color:col("--t-"+t),roughness:.45,emissive:col("--t-"+t),emissiveIntensity:.15}));
+  r.fx.forEach(f=>{const grp=new T.Group(),m=matFor(f.t),hang=f.z>1.6;let geo;
+    if(f.t==="spot"||f.t==="wash"){const yoke=new T.Mesh(new T.BoxGeometry(0.34,0.06,0.14),trussMat);yoke.position.y=-0.18;grp.add(yoke);
+      geo=f.t==="spot"?new T.CylinderGeometry(0.11,0.15,0.36,14):new T.SphereGeometry(0.19,16,12);const h=new T.Mesh(geo,m);h.position.y=-0.38;grp.add(h);
+      if(hang){const len=f.z+0.0-0.5,cone=new T.Mesh(new T.ConeGeometry(len*0.17,len,20,1,true),new T.MeshBasicMaterial({color:col("--t-"+f.t),transparent:true,opacity:.09,depthWrite:false,side:T.DoubleSide}));cone.position.y=-0.5-len/2;grp.add(cone);beams.push(cone)}}
+    else{const dims={par:[0.13,0.13,0.26],fres:[0.16,0.16,0.26],prof:[0.09,0.12,0.5]}[f.t];
+      geo=dims?new T.CylinderGeometry(dims[0],dims[1],dims[2],14):new T.BoxGeometry(...({blind:[0.5,0.22,0.14],batten:[1.0,0.1,0.12],strobe:[0.6,0.12,0.16],haze:[0.45,0.3,0.3],proj:[0.45,0.2,0.4],mate:[0.2,0.2,0.2]}[f.t]||[0.2,0.2,0.2]));
+      const mesh=new T.Mesh(geo,m);mesh.position.y=hang?-0.28:0.12;if(dims&&hang)mesh.rotation.x=0.45;grp.add(mesh)}
+    const fo=(r.focus||{})[f.id];
+    if(fo){grp.children.filter(c=>beams.includes(c)).forEach(c=>{grp.remove(c);beams.splice(beams.indexOf(c),1)});
+      const base=P(f.x,f.y,f.z),from=P(f.x,f.y,f.z-0.35),to=P(fo.x,fo.y,fo.z),dir=to.clone().sub(from),len=dir.length();dir.normalize();
+      const cone=new T.Mesh(new T.ConeGeometry(len*0.12,len,20,1,true),new T.MeshBasicMaterial({color:col("--t-"+f.t),transparent:true,opacity:.11,depthWrite:false,side:T.DoubleSide}));
+      cone.quaternion.setFromUnitVectors(new T.Vector3(0,-1,0),dir);cone.position.copy(from.clone().add(dir.clone().multiplyScalar(len/2)).sub(base));grp.add(cone);beams.push(cone)}
+    grp.position.copy(P(f.x,f.y,f.z));grp.traverse(o=>{if(o.isMesh&&!beams.includes(o))o.userData.fx=f});scene.add(grp);grp.children.forEach(c=>{if(!beams.includes(c))picks.push(c)});
+    if(f.z<1.6&&f.z>0.5){const pole=new T.Mesh(new T.CylinderGeometry(0.03,0.03,f.z,8),trussMat);pole.position.copy(P(f.x,f.y,f.z/2));scene.add(pole)}});
+
+  const ys=[...r.bars.map(b=>b.y),...r.fx.map(f=>f.y)],midY=(Math.min(...ys)+Math.max(...ys))/2,span=Math.max(st.w,Math.max(...ys)-Math.min(...ys));
+  const target=P(0,midY,1.6),cam=new T.PerspectiveCamera(42,1,0.1,200);
+  const home={th:-0.55,ph:0.42,rad:span*1.45};let th=home.th,ph=home.ph,rad=home.rad,auto=spinPref,drag=null,raf=0,alive=true;
+  const place=()=>{cam.position.set(target.x+rad*Math.cos(ph)*Math.sin(th),target.y+rad*Math.sin(ph),target.z+rad*Math.cos(ph)*Math.cos(th));cam.lookAt(target)};
+  const size=()=>{const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()};
+  const ro=new ResizeObserver(size);ro.observe(host);size();
+  const ray=new T.Raycaster(),ndc=new T.Vector2();
+  const hit=e=>{const rc=renderer.domElement.getBoundingClientRect();ndc.set(((e.clientX-rc.left)/rc.width)*2-1,-((e.clientY-rc.top)/rc.height)*2+1);ray.setFromCamera(ndc,cam);const h=ray.intersectObjects(picks,false)[0];return h&&h.object.userData.fx};
+  const el=renderer.domElement;
+  el.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY,moved:false};if(auto){auto=false;onSpin&&onSpin(false)}el.setPointerCapture(e.pointerId)});
+  el.addEventListener("pointermove",e=>{const rc=host.getBoundingClientRect();
+    if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;th-=dx*0.008;ph=Math.min(1.45,Math.max(0.05,ph+dy*0.006));drag.x=e.clientX;drag.y=e.clientY;tip.hidden=true;return}
+    const f=hit(e);if(f){const row=rowFor(v,idx,f);const fo=(r.focus||{})[f.id];tip.innerHTML=`<b>${esc(f.id)}</b> ${esc(f.name)}<br>${esc(fxPos(f))}${row?` \u00b7 <b>${row[4]}.${row[5]}</b>`:""}${fo?`<br>Focus: ${esc(fo.label)}`:""}`;tip.style.left=(e.clientX-rc.left)+"px";tip.style.top=(e.clientY-rc.top)+"px";tip.hidden=false;el.style.cursor="pointer"}else{tip.hidden=true;el.style.cursor=""}});
+  el.addEventListener("pointerup",e=>{if(drag&&!drag.moved){const f=hit(e);if(f)onPick(String(f.id))}drag=null});
+  el.addEventListener("pointerleave",()=>{tip.hidden=true});
+  const api={spin:on=>{auto=on},zoom:k=>{rad=Math.min(span*4,Math.max(span*0.4,rad*k))},reset:()=>{th=home.th;ph=home.ph;rad=home.rad},beams:on=>beams.forEach(b=>b.visible=on)};
+  const loop=()=>{if(!alive)return;if(auto)th+=0.0022;place();renderer.render(scene,cam);raf=requestAnimationFrame(loop)};loop();
+  host._api=api;
+  return()=>{alive=false;cancelAnimationFrame(raf);ro.disconnect();scene.traverse(o=>{o.geometry&&o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{m.map&&m.map.dispose();m.dispose()})}});renderer.dispose();host.innerHTML=""};
+}
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad3=n=>String(n).padStart(3,"0");
+
+function kvTable(rows){return `<table class="kv"><tbody>${rows.map(([k,v])=>`<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join("")}</tbody></table>`}
+function list(items){return `<ul>${items.map(it=>Array.isArray(it)?`<li>${it[0]?`<span class="qty">${esc(it[0])}\u00d7</span>`:""}${esc(it[1])}</li>`:`<li>${esc(it)}</li>`).join("")}</ul>`}
+function stats(s){return `<div class="stats">${s.map(([b,l])=>`<div class="stat"><b>${esc(b)}</b><span>${esc(l)}</span></div>`).join("")}</div>`}
+function block(title,src,body){return `<section class="block"><div class="bh"><h3>${esc(title)}</h3>${src?`<span class="src">${esc(src)}</span>`:""}</div>${body}</section>`}
+
+function patchBody(rows,q){
+  const needle=q.trim().toLowerCase(); let out="",n=0,pending=null;
+  const hi=s=>{const t=esc(s);if(!needle)return t;const i=String(s).toLowerCase().indexOf(needle);return i<0?t:esc(String(s).slice(0,i))+"<mark>"+esc(String(s).slice(i,i+needle.length))+"</mark>"+esc(String(s).slice(i+needle.length))};
+  for(const r of rows){
+    if(r.length===1){pending=r[0];continue}
+    const [fid,fx,mode,ch,u,a,loc]=r; const end=a+ch-1;
+    const hay=`${fid} ${fx} ${mode} ${u}.${a} ${loc}`.toLowerCase();
+    if(needle&&!hay.includes(needle))continue;
+    if(pending){out+=`<tr class="grp"><td colspan="6">${esc(pending)}</td></tr>`;pending=null}
+    out+=`<tr data-fid="${esc(fid)}"><td class="n fid">${hi(fid)}</td><td>${hi(fx)}</td><td>${hi(mode)}</td><td class="n"><span class="uni">${u}</span>${pad3(a)}</td><td class="n">${end>512?`<span style="color:var(--bad)">${end}</span>`:pad3(end)}</td><td>${hi(loc)}</td></tr>`; n++;
+  }
+  return {html:out||(rows.some(r=>r.length>1)?`<tr><td colspan="6" class="empty">No fixtures match \u201c${esc(q)}\u201d.</td></tr>`:`<tr><td colspan="6" class="empty">This venue hasn't published a patch. The plan above shows the standard rig with IDs numbered by bar.</td></tr>`),n};
+}
+function patchCSV(rows){return ["Fixture ID,Fixture,Mode,Universe,Address,End,Location",...rows.filter(r=>r.length>1).map(([f,x,m,c,u,a,l])=>[f,x,m,u,a,a+c-1,l].map(v=>/[",]/.test(v)?`"${String(v).replace(/"/g,'""')}"`:v).join(","))].join("\n")}
+
+/* ---------- MA3 import (Venue Patch Export plugin CSV), kept per browser ---------- */
+const IMPORTED={};
+for(const v of VENUES){try{const s=localStorage.getItem("ma3:"+v.id);if(s)IMPORTED[v.id]=JSON.parse(s)}catch(_){}}
+const patchFor=v=>IMPORTED[v.id]?IMPORTED[v.id].rows:v.patch.rows;
+const noLookup=v=>RIGS[v.id].noPatch&&!IMPORTED[v.id];
+function parseCSV(text){
+  const out=[];let row=[],cell="",q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++}else q=false}else cell+=c}
+    else if(c==='"')q=true;else if(c===","){row.push(cell);cell=""}
+    else if(c==="\n"||c==="\r"){if(c==="\r"&&text[i+1]==="\n")i++;row.push(cell);if(row.some(x=>x.trim()!==""))out.push(row);row=[];cell=""}
+    else cell+=c}
+  row.push(cell);if(row.some(x=>x.trim()!==""))out.push(row);return out}
+function ma3Rows(text){
+  const t=parseCSV(text.replace(/^\ufeff/,""));if(t.length<2)throw new Error("The file has no fixture rows.");
+  const head=t[0].map(h=>h.trim().toLowerCase()),col=(...names)=>head.findIndex(h=>names.includes(h));
+  const ci={fid:col("fixture id","fid","id"),fx:col("fixture","fixture type","type"),mode:col("mode"),u:col("universe","uni"),a:col("address","addr"),e:col("end"),loc:col("location","name","layer","position / notes")};
+  if(ci.fid<0||ci.u<0||ci.a<0)throw new Error("Expected Fixture ID, Universe and Address columns. Export the file with the Venue Patch Export plugin.");
+  const rows=[["Imported from MA3"]];
+  for(const r of t.slice(1)){const u=parseInt(r[ci.u],10),a=parseInt(r[ci.a],10);if(!(u>0&&a>0))continue;
+    const e=parseInt(ci.e>=0?r[ci.e]:"",10),m=ci.mode>=0?r[ci.mode].trim():"";
+    const ch=e>=a?e-a+1:(parseInt((m.match(/(\d+)\s*ch/i)||[])[1],10)||1);
+    const id=r[ci.fid].trim();rows.push([/^\d+$/.test(id)?+id:id,ci.fx>=0?r[ci.fx].trim():"",m,ch,u,a,ci.loc>=0?r[ci.loc].trim():""])}
+  if(rows.length<2)throw new Error("No patched fixtures with a universe and address were found.");
+  return rows}
+
+/* ---------- fullscreen: real Fullscreen API where allowed, otherwise a fixed overlay ---------- */
+function fsLabel(box,on){const b=box.querySelector('[id^="fs-"]');if(b){b.setAttribute("aria-pressed",on);b.textContent=on?"Exit fullscreen":"Fullscreen"}}
+function setMax(box,on){box.classList.toggle("is-max",on);box.classList.toggle("is-full",on);fsLabel(box,on);document.body.style.overflow=on?"hidden":""}
+function toggleFull(box){
+  const cur=document.fullscreenElement||document.webkitFullscreenElement;
+  if(cur===box){(document.exitFullscreen||document.webkitExitFullscreen).call(document);return}
+  if(box.classList.contains("is-max")){setMax(box,false);return}
+  const req=box.requestFullscreen||box.webkitRequestFullscreen,fallback=()=>setMax(box,true);
+  if(!req)return fallback();
+  let done=false;const fb=()=>{if(!done){done=true;fallback()}};
+  try{const p=req.call(box);if(p&&p.then)p.then(()=>{done=true},fb)}catch(_){fb()}
+  setTimeout(()=>{if(!(document.fullscreenElement||document.webkitFullscreenElement))fb()},600)
+}
+["fullscreenchange","webkitfullscreenchange"].forEach(ev=>document.addEventListener(ev,()=>{
+  const cur=document.fullscreenElement||document.webkitFullscreenElement;
+  document.querySelectorAll("#plan-box,#three-box").forEach(b=>{if(b.classList.contains("is-max"))return;b.classList.toggle("is-full",b===cur);fsLabel(b,b===cur)})}));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")document.querySelectorAll(".is-max").forEach(b=>setMax(b,false))});
+
+/* CSV for the Venue Patch Import plugin. MA3 axes: X across (negative = stage right), Y upstage from the DSE, Z from the floor. */
+function ma3CSV(v){
+  const r=RIGS[v.id],idx=noLookup(v)?new Map():patchIndex(patchFor(v)),deck=r.stage?r.stage.deck:0,n=x=>(Math.round(x*100)/100).toString();
+  const q=s=>{s=String(s??"");return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s};
+  const out=["Fixture ID,Name,Fixture,Mode,Channels,Universe,Address,Generic,X,Y,Z,Position,Focus X,Focus Y,Focus Z,Focus"],FOC=r.focus||{};
+  for(const f of r.fx){if(f.t==="proj")continue;const row=rowFor(v,idx,f);
+    const fromMA=v.id==="factory"&&!IMPORTED[v.id]&&row&&row[6];
+    const name=fromMA?row[6].split(" \u00b7 ")[0]:`${fxPos(f)||f.name} ${f.id}`;
+    out.push([f.id,name,row?row[1]:f.name,row?row[2]:"",row?row[3]:"",row?row[4]:"",row?row[5]:"",f.t,n(f.x),n(f.y),n(f.z+deck),fxPos(f)||"Rig",...(FOC[f.id]?[n(FOC[f.id].x),n(FOC[f.id].y),n(FOC[f.id].z+deck),FOC[f.id].label]:["","","",""])].map(q).join(","))}
+  return out.join("\n")+"\n"}
+
+/* ---------- MVR export: GeneralSceneDescription.xml in a stored (uncompressed) zip ----------
+   MVR axes: millimetres, X across (negative = stage right), Y upstage from the DSE, Z up from the floor.
+   Fixtures keep the default orientation (beam pointing down). GDTF files aren't included. */
+const CRC_T=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(b){let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC_T[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+function zipStore(files){
+  const enc=new TextEncoder(),parts=[],central=[];let off=0;
+  const u16=n=>[n&255,(n>>8)&255],u32=n=>[n&255,(n>>8)&255,(n>>16)&255,(n>>>24)&255];
+  for(const f of files){const name=enc.encode(f.name),d=f.data,crc=crc32(d);
+    const head=[...u32(0x04034b50),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0x21),...u32(crc),...u32(d.length),...u32(d.length),...u16(name.length),...u16(0)];
+    parts.push(new Uint8Array(head),name,d);
+    central.push([...u32(0x02014b50),...u16(20),...u16(20),...u16(0),...u16(0),...u16(0),...u16(0x21),...u32(crc),...u32(d.length),...u32(d.length),...u16(name.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)],name);
+    off+=head.length+name.length+d.length}
+  let cdLen=0;const cd=[];for(let i=0;i<central.length;i+=2){const h=new Uint8Array(central[i]);cd.push(h,central[i+1]);cdLen+=h.length+central[i+1].length}
+  const end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(cdLen),...u32(off),...u16(0)]);
+  const all=[...parts,...cd,end],out=new Uint8Array(all.reduce((s,p)=>s+p.length,0));let p=0;for(const a of all){out.set(a,p);p+=a.length}return out}
+const xmlEsc=s=>String(s).replace(/[<>&"']/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;","'":"&apos;"}[c]));
+const uuid=()=>(crypto.randomUUID?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==="x"?r:(r&3|8)).toString(16)})).toUpperCase();
+function mvrXML(v){
+  const r=RIGS[v.id],idx=noLookup(v)?new Map():patchIndex(patchFor(v)),deck=r.stage?r.stage.deck:0,mm=n=>(Math.round(n*1000)).toString();
+  const FOC=r.focus||{},fpts=[],fref={};
+  for(const [id,fo] of Object.entries(FOC)){const u=uuid();fref[id]=u;fpts.push(`<FocusPoint name="${xmlEsc(id+" "+fo.label)}" uuid="${u}"><Matrix>{1,0,0}{0,1,0}{0,0,1}{${mm(fo.x)},${mm(fo.y)},${mm(fo.z+deck)}}</Matrix></FocusPoint>`)}
+  const layers=new Map();
+  for(const f of r.fx){if(f.t==="proj")continue;const k=fxPos(f)||"Rig";if(!layers.has(k))layers.set(k,[]);layers.get(k).push(f)}
+  const fixtureXML=f=>{const row=rowFor(v,idx,f),name=row?row[1]:f.name,mode=row?row[2]:"",idn=/^\d+$/.test(String(f.id))?String(f.id):"0";
+    const addr=row&&row[4]>0&&row[5]>0?`<Addresses><Address break="0">${(row[4]-1)*512+row[5]}</Address></Addresses>`:"";
+    return `<Fixture name="${xmlEsc(name+" "+f.id)}" uuid="${uuid()}"><Matrix>{1,0,0}{0,1,0}{0,0,1}{${mm(f.x)},${mm(f.y)},${mm(f.z+deck)}}</Matrix><GDTFSpec>${xmlEsc(name)}.gdtf</GDTFSpec><GDTFMode>${xmlEsc(mode)}</GDTFMode>${fref[f.id]?`<Focus>${fref[f.id]}</Focus>`:""}<FixtureID>${xmlEsc(f.id)}</FixtureID><FixtureIDNumeric>${idn}</FixtureIDNumeric><UnitNumber>0</UnitNumber>${addr}</Fixture>`};
+  const body=(fpts.length?`<Layer name="Focus points" uuid="${uuid()}"><ChildList>${fpts.join("")}</ChildList></Layer>`:"")+[...layers].map(([name,list])=>`<Layer name="${xmlEsc(name)}" uuid="${uuid()}"><ChildList>${list.map(fixtureXML).join("")}</ChildList></Layer>`).join("");
+  return `<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<GeneralSceneDescription verMajor="1" verMinor="6" provider="Sydney Venue Spec Pack" providerVersion="1.0"><UserData/><Scene><AUXData/><Layers>${body}</Layers></Scene></GeneralSceneDescription>\n`}
+function buildMVR(v){return zipStore([{name:"GeneralSceneDescription.xml",data:new TextEncoder().encode(mvrXML(v))}])}
+
+function render(id){
+  const v=VENUES.find(x=>x.id===id)||VENUES[0];
+  if(kill3D){kill3D();kill3D=null}
+  document.body.style.overflow="";
+  if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});
+  document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t.dataset.id===v.id));
+  let h=`<article class="venue"><div class="vhead"><div><h2>${esc(v.name)}</h2><div class="addr">${esc(v.addr)}</div></div><div class="chips">${v.chips.map(([k,t])=>`<span class="chip ${k}">${esc(t)}</span>`).join("")}</div></div>`;
+  if(v.note)h+=`<div class="note">${v.note}</div>`;
+  h+=stats(v.stats);
+  h+=block(v.rig.title,v.rig.src,`<div class="cols">${v.rig.groups.map(([t,items])=>`<div class="card"><h4>${esc(t)}</h4>${list(items)}</div>`).join("")}</div>`);
+  const rows=patchFor(v),imp=IMPORTED[v.id],total=rows.filter(r=>r.length>1).length;
+  h+=block(imp?"Patch (imported from MA3)":v.patch.title,imp?`${imp.file} \u00b7 imported ${imp.when}`:v.patch.src,`${imp?`<div class="note"><strong>Showing your MA3 export.</strong> It is saved in this browser only. Published patch: ${esc(v.patch.title)}.</div>`:""}<div class="tools"><input type="search" id="q-${v.id}" placeholder="Filter by ID, fixture, address or position" aria-label="Filter patch"><button class="btn" type="button" id="csv-${v.id}">Copy as CSV</button><label class="btn" for="imp-${v.id}">Import MA3 CSV</label><input type="file" id="imp-${v.id}" accept=".csv,text/csv,text/plain" hidden>${imp?`<button class="btn" type="button" id="rev-${v.id}">Show published patch</button>`:""}<span class="count" id="count-${v.id}">${total} fixtures</span></div>
+    <div class="tablebox"><table class="patch"><thead><tr><th>ID</th><th>Fixture</th><th>Mode</th><th>Uni / Addr</th><th>End</th><th>Position / notes</th></tr></thead><tbody id="pb-${v.id}"></tbody></table></div>`);
+  const rg=RIGS[v.id];
+  if(!rg)h+=block("Lighting plan","",`<p class="vnote">${esc(v.noPlot||"No lighting plot is published for this venue, so there's no plan or 3D view.")}</p>`);
+  else h+=block("Lighting plan","Hover or click a fixture to find it in the patch",`<div class="viz">
+      <div class="plan" id="plan-box"><div class="vhd"><span>Plan view, upstage at top</span><div class="btns"><button type="button" id="fs-plan" aria-pressed="false">Fullscreen</button></div></div><div class="scroll">${planSVG(v)}</div></div>
+      <div class="three" id="three-box"><div class="vhd"><span>3D view</span><div class="btns"><button type="button" id="z-spin" aria-pressed="${spinPref}">Spin</button><button type="button" id="z-in" aria-label="Zoom in">+</button><button type="button" id="z-out" aria-label="Zoom out">\u2212</button><button type="button" id="z-beam" aria-pressed="true">Beams</button><button type="button" id="z-reset">Reset</button><button type="button" id="fs-3d" aria-pressed="false">Fullscreen</button></div></div><div class="stage3d" id="s3d"></div></div>
+    </div>${legend(rg)}<p class="vnote">${esc(rg.note)}</p><div class="tools"><button class="btn" type="button" id="mvr-save" hidden>Save MVR</button><button class="btn" type="button" id="ma3-save" hidden>Save MA3 import CSV</button><button class="btn" type="button" id="ma3-copy">Copy MA3 import CSV</button><span class="count" id="ma3-msg">MVR: the rig as a 3D scene for MA3, Vectorworks or Capture. MA3 CSV: for the Venue Patch Import plugin (positions, focus and placeholders).</span></div>`);
+  if(v.drawings&&v.drawings.length)h+=block("Venue drawings","The original sheets. Click one to view it full size.",`<div class="drawings">${v.drawings.map(([src,t,c])=>`<figure><a href="${src}" data-lb="${src}" aria-label="Open ${esc(t)} full size"><img src="${src}" alt="${esc(t)}" loading="lazy"></a><figcaption><b>${esc(t)}.</b> ${esc(c)}</figcaption></figure>`).join("")}</div>`);
+  if(v.network)h+=block("DMX network","Enmore DMX node gateway upgrade",`<div class="cols"><div class="card">${kvTable(v.network.slice(0,6))}</div><div class="card">${kvTable(v.network.slice(6))}</div></div>`);
+  if(v.info)h+=block("Stage, power and audio","",`<div class="cols">${v.info.map(([t,rows])=>`<div class="card"><h4>${esc(t)}</h4>${kvTable(rows)}</div>`).join("")}</div>`);
+  if(v.rooms)h+=v.rooms.map(r=>block(r.name,r.src,`${stats(r.stats)}<div class="cols">${r.lists.map(([t,items])=>`<div class="card"><h4>${esc(t)}</h4>${list(items)}</div>`).join("")}</div>`)).join("");
+  h+=block("Source documents","Links open the venue's PDF in a new tab",`<ul class="srcs">${v.sources.map(([t,p,d])=>`<li>${/^Supplied/.test(p)?`${esc(t)}<span class="d">${esc(p.replace(/^Supplied pack: /,"In the supplied pack: "))}</span>`:`<a href="${/^https?:/.test(p)?p:S3+p}" target="_blank" rel="noopener">${esc(t)}</a><span class="d">${esc(d)}</span>`}</li>`).join("")}</ul>`);
+  h+=`<p class="foot">Specs change between shows. Confirm the rig, patch and power with ${v.contact||"Century Venues production on <b>+61 2 9519 9231</b>"} during advancing.</p></article>`;
+  document.getElementById("view").innerHTML=h;
+
+  const tb=document.getElementById("pb-"+v.id), q=document.getElementById("q-"+v.id), cnt=document.getElementById("count-"+v.id);
+  const draw=()=>{const r=patchBody(rows,q.value);tb.innerHTML=r.html;cnt.textContent=q.value.trim()?`${r.n} of ${total} fixtures`:`${total} fixtures`};
+  q.addEventListener("input",draw); draw();
+  const csvBtn=document.getElementById("csv-"+v.id);
+  csvBtn.addEventListener("click",()=>{const txt=patchCSV(rows);
+    navigator.clipboard.writeText(txt).then(()=>{csvBtn.textContent="Copied";setTimeout(()=>csvBtn.textContent="Copy as CSV",1600)})
+    .catch(()=>{const ta=document.createElement("textarea");ta.value=txt;ta.style.cssText="width:100%;height:160px;font:12px var(--mono)";csvBtn.closest(".block").appendChild(ta);ta.select();csvBtn.textContent="Select and copy below"})});
+  const impIn=document.getElementById("imp-"+v.id);
+  impIn.addEventListener("change",()=>{const file=impIn.files&&impIn.files[0];if(!file)return;
+    file.text().then(txt=>{
+      try{const rows=ma3Rows(txt);IMPORTED[v.id]={rows,file:file.name,when:new Date().toLocaleString("en-AU",{dateStyle:"medium",timeStyle:"short"})};
+        try{localStorage.setItem("ma3:"+v.id,JSON.stringify(IMPORTED[v.id]))}catch(_){}
+        render(v.id)}
+      catch(err){cnt.textContent=err.message;cnt.style.color="var(--bad)"}})});
+  const rev=document.getElementById("rev-"+v.id);
+  if(rev)rev.addEventListener("click",()=>{delete IMPORTED[v.id];try{localStorage.removeItem("ma3:"+v.id)}catch(_){}render(v.id)});
+  const pick=fid=>{
+    document.querySelectorAll(".fx.sel").forEach(g=>g.classList.remove("sel"));
+    document.querySelectorAll(`.fx[data-fid="${CSS.escape(fid)}"]`).forEach(g=>g.classList.add("sel"));
+    if(noLookup(v))return;
+    const pf=RIGS[v.id].fx.find(x=>String(x.id)===fid);
+    if(pf&&IMPORTED[v.id]&&!rowFor(v,patchIndex(rows),pf))return;
+    let tr=tb.querySelector(`tr[data-fid="${CSS.escape(fid)}"]`);
+    if(!tr&&q.value){q.value="";draw();tr=tb.querySelector(`tr[data-fid="${CSS.escape(fid)}"]`)}
+    if(!tr)return;
+    tr.scrollIntoView({block:"center",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+    tr.classList.add("flash");setTimeout(()=>tr.classList.remove("flash"),1800)};
+  document.querySelectorAll(".fx").forEach(g=>{g.addEventListener("click",()=>pick(g.dataset.fid));g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(g.dataset.fid)}})});
+  if(rg){
+  const s3d=document.getElementById("s3d");
+  try{kill3D=mount3D(s3d,v,pick,on=>setSpin(on,false))}catch(err){s3d.innerHTML=`<div class="empty">The 3D view couldn't start in this browser.</div>`}
+  const api=()=>s3d._api;
+  document.getElementById("z-in").onclick=()=>api()&&api().zoom(0.8);
+  document.getElementById("z-out").onclick=()=>api()&&api().zoom(1.25);
+  document.getElementById("z-reset").onclick=()=>api()&&api().reset();
+  const spinBtn=document.getElementById("z-spin");
+  function setSpin(on,fromUser){spinPref=on;spinBtn.setAttribute("aria-pressed",on);if(fromUser){api()&&api().spin(on);try{localStorage.setItem("spin",on?"1":"0")}catch(_){}}}
+  spinBtn.onclick=()=>setSpin(spinBtn.getAttribute("aria-pressed")!=="true",true);
+  const fsPlan=document.getElementById("fs-plan"),fs3d=document.getElementById("fs-3d");
+  fsPlan.onclick=()=>toggleFull(document.getElementById("plan-box"),fsPlan);
+  fs3d.onclick=()=>toggleFull(document.getElementById("three-box"),fs3d);
+  const ma3Msg=document.getElementById("ma3-msg"),ma3Save=document.getElementById("ma3-save"),ma3Copy=document.getElementById("ma3-copy");
+  const csvName=`${v.id}-ma3-import.csv`;
+  const mvrSave=document.getElementById("mvr-save");
+  if(window.claude&&window.claude.use)window.claude.use("downloads").then(dl=>{if(!dl)return;mvrSave.hidden=false;mvrSave.onclick=()=>dl.save({filename:`${v.id}.mvr.zip`,data:new Blob([buildMVR(v)])}).then(()=>{ma3Msg.textContent=`Saved ${v.id}.mvr.zip. Rename it to ${v.id}.mvr (remove .zip), then import it. Map the fixture types to your library's GDTFs when asked.`;ma3Msg.style.color=""}).catch(e=>{ma3Msg.textContent=e&&e.code==="declined"?"Save cancelled.":"This view can't save files."});ma3Save.hidden=false;ma3Save.onclick=()=>dl.save({filename:csvName,data:ma3CSV(v)}).then(()=>{ma3Msg.textContent=`Saved ${csvName}. In MA3, run Venue Patch Import and point it at that file.`;ma3Msg.style.color=""}).catch(e=>{ma3Msg.textContent=e&&e.code==="declined"?"Save cancelled.":"This view can't save files. Use Copy instead.";})}).catch(()=>{});
+  ma3Copy.onclick=()=>{const txt=ma3CSV(v);navigator.clipboard.writeText(txt).then(()=>{ma3Msg.textContent=`Copied. Paste it into a text file named ${csvName}, then run Venue Patch Import in MA3.`}).catch(()=>{const ta=document.createElement("textarea");ta.value=txt;ta.style.cssText="width:100%;height:160px;font:12px var(--mono)";ma3Copy.closest(".block").appendChild(ta);ta.select();ma3Msg.textContent="Select the text below and copy it."})};
+  const zb=document.getElementById("z-beam");zb.onclick=()=>{const on=zb.getAttribute("aria-pressed")!=="true";zb.setAttribute("aria-pressed",on);api()&&api().beams(on)};
+  }
+  document.querySelectorAll("[data-lb]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();openLB(a.dataset.lb,a.querySelector("img").alt)}));
+}
+
+const lb=document.getElementById("lb"), lbImg=document.getElementById("lbImg");
+function openLB(src,alt){lbImg.src=src;lbImg.alt=alt;lb.hidden=false;document.getElementById("lbClose").focus()}
+function closeLB(){lb.hidden=true;lbImg.removeAttribute("src")}
+document.getElementById("lbClose").addEventListener("click",closeLB);
+lb.addEventListener("click",e=>{if(e.target===lb)closeLB()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!lb.hidden)closeLB()});
+
+const tabs=document.getElementById("tabs");
+tabs.innerHTML=VENUES.map(v=>`<button class="tab" role="tab" type="button" data-id="${v.id}">${esc(v.tab)}</button>`).join("");
+tabs.addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)return;render(b.dataset.id);try{history.replaceState(null,"","#"+b.dataset.id)}catch(_){}try{localStorage.setItem("venue",b.dataset.id)}catch(_){}window.scrollTo({top:0})});
+let start=(location.hash||"").slice(1);
+if(!VENUES.some(v=>v.id===start)){try{start=localStorage.getItem("venue")||""}catch(_){start=""}}
+render(VENUES.some(v=>v.id===start)?start:"factory");
+window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(VENUES.some(v=>v.id===h))render(h)});
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{const t=document.querySelector(".tab[aria-selected=\"true\"]");if(t)render(t.dataset.id)})}catch(_){}
+</script>

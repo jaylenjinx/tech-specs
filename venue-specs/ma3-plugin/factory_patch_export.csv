@@ -1,0 +1,57 @@
+Fixture ID,Fixture,Mode,Universe,Address,End,Location
+11,LED eProfile HP,2 Channel,1,73,74,Flown FOH
+12,LED eProfile HP,2 Channel,1,75,76,Flown FOH
+13,LED eProfile HP,2 Channel,1,77,78,Flown FOH
+14,LED eProfile HP,2 Channel,1,79,80,Flown FOH
+15,EVE F-50Z,3 channel,1,451,453,Flown FOH
+16,EVE F-50Z,3 channel,1,454,456,Flown FOH
+17,EVE F-50Z,3 channel,1,457,459,Flown FOH
+18,EVE F-50Z,3 channel,1,460,462,Flown FOH
+101,Frezno 150 TW STD P,STD P,1,1,8,Flown FOH
+102,Frezno 150 TW STD P,STD P,1,9,16,Flown FOH
+103,Frezno 150 TW STD P,STD P,1,17,24,Flown FOH
+104,Frezno 150 TW STD P,STD P,1,25,32,Flown FOH
+105,Frezno 150 HEX TR16,TR16,1,33,52,Flown FOH
+106,Frezno 150 HEX TR16,TR16,1,53,72,Flown FOH
+107,Frezno 150 HEX TR16,TR16,2,301,320,Flown FOH
+301,Stage Par 100 Colour IP,6 channel,1,101,106,Flown Stage
+302,Stage Par 100 Colour IP,6 channel,1,107,112,Flown Stage
+303,Stage Par 100 Colour IP,6 channel,1,113,118,Flown Stage
+304,Stage Par 100 Colour IP,6 channel,1,119,124,Flown Stage
+305,Stage Par 100 Colour IP,6 channel,1,125,130,Flown Stage
+306,Stage Par 100 Colour IP,6 channel,1,131,136,Flown Stage
+307,Stage Par 100 Colour IP,6 channel,1,137,142,Flown Stage
+308,Stage Par 100 Colour IP,6 channel,1,143,148,Flown Stage
+309,Stage Par 100 Colour IP,6 channel,1,149,154,Flown Stage
+310,Stage Par 100 Colour IP,6 channel,1,155,160,Flown Stage
+311,Stage Par 100 Colour IP,6 channel,1,161,166,Flown Stage
+312,Stage Par 100 Colour IP,6 channel,1,167,172,Flown Stage
+313,Stage Par 100 Colour IP,6 channel,1,173,178,Flown Stage
+314,Stage Par 100 Colour IP,6 channel,1,179,184,Flown Stage
+315,Stage Par 100 Colour IP,6 channel,1,185,190,Flown Stage
+316,Stage Par 100 Colour IP,6 channel,1,191,196,Flown Stage
+317,Stage Par 100 Colour IP,6 channel,1,197,202,Flown Stage
+318,Stage Par 100 Colour IP,6 channel,1,203,208,Flown Stage
+319,Stage Par 100 Colour IP,6 channel,1,209,214,Flown Stage
+320,Stage Par 100 Colour IP,6 channel,1,215,220,Flown Stage
+420,F-3 Fazer,Mode 0,1,511,512,Fixture Layer
+601,Stage Par 100 Colour IP,6 channel,1,225,230,Fixture Layer
+602,Stage Par 100 Colour IP,6 channel,1,231,236,Fixture Layer
+603,Stage Par 100 Colour IP,6 channel,1,237,242,Fixture Layer
+604,Stage Par 100 Colour IP,6 channel,1,243,248,Fixture Layer
+701,ACME ENERGY SPOT PRO (XA-400SPOT PRO),Mode 3 25 DMX,1,251,275,Fixture Layer
+702,ACME ENERGY SPOT PRO (XA-400SPOT PRO),Mode 3 25 DMX,1,276,300,Fixture Layer
+703,ACME ENERGY SPOT PRO (XA-400SPOT PRO),Mode 3 25 DMX,1,301,325,Fixture Layer
+704,ACME ENERGY SPOT PRO (XA-400SPOT PRO),Mode 3 25 DMX,1,326,350,Fixture Layer
+705,ACME ENERGY SPOT PRO (XA-400SPOT PRO),Mode 3 25 DMX,1,351,375,Fixture Layer
+706,ACME ENERGY SPOT PRO (XA-400SPOT PRO),Mode 3 25 DMX,1,376,400,Fixture Layer
+1011,ACME GINAMP (STROBE 2)INT,Mode 4 36DMX,2,1,36,Fixture Layer
+1012,ACME GINAMP (STROBE 2)INT,Mode 4 36DMX,2,37,72,Fixture Layer
+1013,ACME GINAMP (STROBE 2)INT,Mode 4 36DMX,2,73,108,Fixture Layer
+1014,ACME GINAMP (STROBE 2)INT,Mode 4 36DMX,2,109,144,Fixture Layer
+1015,ACME GINAMP (STROBE 2)INT,Mode 4 36DMX,2,217,252,Fixture Layer
+1016,ACME GINAMP (STROBE 2)INT,Mode 4 36DMX,2,145,180,Fixture Layer
+1101,Stage Blinder IP,2 channel,1,401,402,Fixture Layer
+1102,Stage Blinder IP,2 channel,1,407,408,Fixture Layer
+1103,Stage Blinder IP,2 channel,1,413,414,Fixture Layer
+1104,Stage Blinder IP,2 channel,1,419,420,Fixture Layer

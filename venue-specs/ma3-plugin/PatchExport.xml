@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GMA3 DataVersion="2.5.1.0">
+	<Plugin Name="Venue Patch Export" Version="1.0.0">
+		<ComponentLua Name="PatchExport" FileName="PatchExport.lua" />
+	</Plugin>
+</GMA3>
