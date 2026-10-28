@@ -411,7 +411,7 @@ const RIGS={};
       ...on(LX2,[[401,"spot",-3.85,0,X],...seq(201,4,[-3.49,-3.23,-2.99,-2.75],"par",0,P),[402,"spot",-2.35,0,X],[52,"blind",-1.53,0,B],[403,"spot",-0.73,0,X],...seq(205,4,[-0.34,-0.09,0.17,0.44],"par",0,P),[404,"spot",0.83,0,X],[55,"blind",1.65,0,B],[405,"spot",2.47,0,X],...seq(209,4,[2.8,3.07,3.32,3.57],"par",0,P),[406,"spot",3.89,0,X]]),
       ...on(LX3,[[407,"spot",-3.14,0,X],...seq(213,4,[-2.75,-2.52,-2.28,-2.04],"par",0,P),[408,"spot",-1.71,0,X],...seq(217,4,[-0.33,-0.07,0.17,0.42],"par",0,P),[409,"spot",1.71,0,X],...seq(221,4,[2.1,2.34,2.58,2.81],"par",0,P),[410,"spot",3.13,0,X]]),
       ...on(LED,[[51,"blind",-3.98,0,B],[601,"strobe",-3.33,0,G],[602,"strobe",-1.28,0,G],[603,"strobe",1.33,0,G],[604,"strobe",3.4,0,G],[54,"blind",3.96,0,B]]),
-      at(605,"strobe",-3.5,0.45,0.15,G,"DS floor"),at(608,"strobe",3.5,0.45,0.15,G,"DS floor"),at(606,"strobe",-2.39,5.4,0.15,G,"US floor"),at(607,"strobe",2.38,5.4,0.15,G,"US floor")]};
+      at(605,"strobe",-3.5,0.45,0.15,G,"DS floor"),at(608,"strobe",3.5,0.45,0.15,G,"DS floor"),Object.assign(at(606,"strobe",-2.39,5,0.15,G,"US floor"),{planY:4.95}),Object.assign(at(607,"strobe",2.38,5,0.15,G,"US floor"),{planY:4.95})]};
 })();
 (()=>{ /* Factory: fixture order and spacing measured from the April 2026 plot */
   const FOH=bar("FOH bar",-1.6,2.9,-5.6,5.6),DS=bar("LX1",1.5,3,-4,4),MID=bar("LX2",3,3,-4,4),US=bar("LX3",4.5,3,-4,4);
