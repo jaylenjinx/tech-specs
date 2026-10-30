@@ -1,0 +1,750 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Venue Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Same tokens as the spec pack (index.html). The builder reads top-down: venue > patch > plot > fix > export. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#151a21; --muted:#5b6673; --line:#d9dfe6;
+  --accent:#0b6e86; --accent-ink:#ffffff; --tape:#1d232b;
+  --ok:#1f7a4d; --ok-bg:#e3f3ea; --warn:#9a5b00; --warn-bg:#fbefd9; --bad:#a3302a; --bad-bg:#f8e2e0;
+  --row:#f7f9fb; --hl:#fff3c4;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --t-spot:#e0553a;--t-wash:#2f86d6;--t-par:#1f9d68;--t-fres:#8b5cf6;--t-prof:#c98a00;--t-blind:#d4489a;--t-strobe:#64748b;--t-haze:#7c8a99;--t-proj:#0d9488;--t-mate:#0ea5e9;--t-batten:#b45309;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101419; --panel:#171c23; --ink:#e7ecf1; --muted:#97a3b0; --line:#2a323c;
+  --accent:#3cc3df; --accent-ink:#0b1216; --tape:#0a0d11;
+  --ok:#6fd39f; --ok-bg:#163326; --warn:#f2b552; --warn-bg:#3a2a10; --bad:#f08a82; --bad-bg:#3b1a18;
+  --row:#1b2129; --hl:#4a3f12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101419; --panel:#171c23; --ink:#e7ecf1; --muted:#97a3b0; --line:#2a323c;
+  --accent:#3cc3df; --accent-ink:#0b1216; --tape:#0a0d11;
+  --ok:#6fd39f; --ok-bg:#163326; --warn:#f2b552; --warn-bg:#3a2a10; --bad:#f08a82; --bad-bg:#3b1a18;
+  --row:#1b2129; --hl:#4a3f12; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;margin:0}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:16px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mast{background:var(--tape);color:#e9edf1}
+.mast .wrap{padding-block:22px 18px}
+.mast h1{font-size:clamp(28px,5vw,40px);font-weight:700;text-transform:uppercase}
+.mast p{margin:4px 0 0;color:#a9b4bf;font-size:15px;max-width:80ch}
+.mast a{color:#8fdcef}
+.steps{position:sticky;top:0;z-index:5;background:var(--tape);border-bottom:3px solid var(--accent)}
+.steps .wrap{display:flex;gap:4px;overflow-x:auto;padding-block:10px 0;scrollbar-width:none}
+.steps a{color:#aeb8c2;text-decoration:none;font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:.04em;text-transform:uppercase;padding:6px 12px 7px;border-radius:6px 6px 0 0;white-space:nowrap}
+.steps a:hover{color:#fff}
+.steps a .ok{color:var(--ok)}
+main .wrap{display:grid;gap:34px;padding-block:26px 80px}
+section.step{display:grid;gap:12px;min-width:0;scroll-margin-top:60px}
+.bh{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:6px}
+.bh h2{font-size:24px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.bh h2 span{color:var(--accent);margin-right:8px}
+.bh .src{font-size:13px;color:var(--muted)}
+.lede{margin:0;color:var(--muted);font-size:15px;max-width:90ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 16px}
+label.f{display:grid;gap:3px;font-size:13px;color:var(--muted);font-weight:500}
+label.f input,label.f select,label.f textarea,.inp{font:inherit;font-size:15px;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);min-width:0;width:100%}
+label.f textarea{min-height:70px;resize:vertical}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:inherit;font-size:14px;font-weight:600;padding:7px 12px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08);color:var(--accent-ink)}
+.btn[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.count{font-size:13px;color:var(--muted)}
+.msg{font-size:14px;padding:8px 12px;border-radius:6px;background:var(--ok-bg);color:var(--ok)}
+.msg.warn{background:var(--warn-bg);color:var(--warn)} .msg.bad{background:var(--bad-bg);color:var(--bad)}
+.msg:empty{display:none}
+.drop{border:2px dashed var(--line);border-radius:8px;padding:18px;text-align:center;color:var(--muted);background:var(--panel);cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--accent);color:var(--accent)}
+.drop b{color:var(--ink)}
+.tablebox{overflow:auto;max-height:420px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table.t{border-collapse:collapse;width:100%;font-size:14px}
+.t th{position:sticky;top:0;background:var(--panel);text-align:left;font-family:var(--display);font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.t td{padding:6px 10px;border-top:1px solid var(--line);vertical-align:top}
+.t tbody tr:nth-child(even){background:var(--row)}
+.t td.n{font-family:var(--mono);font-size:13px;white-space:nowrap}
+.t tr.grp td{background:var(--bg);font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:13px;color:var(--accent)}
+.t select{font:inherit;font-size:13px;padding:3px 6px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink)}
+.t tr.skip td{opacity:.45}
+.map{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 12px}
+
+/* plot editor */
+.editor{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start}
+@media (max-width:900px){.editor{grid-template-columns:minmax(0,1fr)}}
+.canvasbox{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.cvhd{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line)}
+.cvhd .sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+.viewport{position:relative;overflow:auto;height:min(72vh,760px);background:#fff;touch-action:none}
+.viewport.empty{display:grid;place-items:center;color:#5b6673;font-size:15px}
+.sheet{position:relative;transform-origin:0 0}
+.sheet img{display:block;user-select:none;pointer-events:none}
+.sheet svg{position:absolute;inset:0;overflow:visible}
+.mk{cursor:grab}
+.mk circle.b{stroke:#fff;stroke-width:2}
+.mk text{font:600 12px var(--mono);fill:#111;paint-order:stroke;stroke:#fff;stroke-width:3px}
+.mk.sel circle.b{stroke:#111;stroke-width:3}
+.mk.bad circle.b{fill:#a3302a!important}
+.mk.dup circle.b{stroke:#d97706;stroke-width:3;stroke-dasharray:3 2}
+.barline{stroke:#0b6e86;stroke-width:2;stroke-dasharray:8 5;opacity:.8}
+.barlab{font:700 14px var(--display);fill:#0b6e86;paint-order:stroke;stroke:#fff;stroke-width:4px;letter-spacing:.05em}
+.calpt{fill:#e0553a;stroke:#fff;stroke-width:2}
+.calline{stroke:#e0553a;stroke-width:3}
+.side{display:grid;gap:14px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:grid;gap:8px;align-content:start;min-width:0}
+.card h3{font-size:17px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--accent)}
+.card .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.list{display:flex;flex-wrap:wrap;gap:4px;max-height:160px;overflow:auto}
+.pill{font:500 12px var(--mono);padding:2px 7px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.pill:hover,.pill[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
+.bars{display:grid;gap:6px}
+.barrow{display:grid;grid-template-columns:1fr 64px 64px 26px;gap:6px;align-items:center}
+.barrow input{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--ink);min-width:0;width:100%}
+.barrow button{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:5px;cursor:pointer;height:28px}
+.small{font-size:12px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+.progress{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+code{font-family:var(--mono);font-size:13px;background:var(--bg);padding:1px 5px;border-radius:4px}
+ol.howto{margin:0;padding-left:20px;display:grid;gap:4px;font-size:15px}
+</style>
+
+<header class="mast"><div class="wrap">
+  <h1>Venue Builder</h1>
+  <p>Turn a lighting plot and a patch into a new venue page for the <a href="index.html">Sydney Venue Spec Pack</a>. Everything runs in this browser; your work is kept here until you clear it.</p>
+</div></header>
+<nav class="steps" aria-label="Steps"><div class="wrap">
+  <a href="#s-venue">1 Venue</a><a href="#s-patch">2 Patch <span class="ok" id="ok-patch"></span></a><a href="#s-plot">3 Plot <span class="ok" id="ok-plot"></span></a><a href="#s-fix">4 Fixtures</a><a href="#s-out">5 Preview and export</a>
+</div></nav>
+
+<main><div class="wrap">
+
+<section class="step" id="s-venue">
+  <div class="bh"><h2><span>1</span>Venue</h2><div class="tools"><label class="btn" for="proj-in">Open project</label><input type="file" id="proj-in" accept=".json,application/json" hidden><button class="btn" type="button" id="proj-new">Start over</button></div></div>
+  <div class="grid">
+    <label class="f">Venue name<input id="v-name" placeholder="The Factory Theatre"></label>
+    <label class="f">Tab label<input id="v-tab" placeholder="Factory"></label>
+    <label class="f">ID (used in links and file names)<input id="v-id" placeholder="factory"></label>
+    <label class="f">Address<input id="v-addr" placeholder="105 Victoria Road, Marrickville NSW"></label>
+    <label class="f">Stage width (m)<input id="v-sw" type="number" step="0.1" min="0" placeholder="8"></label>
+    <label class="f">Stage depth (m)<input id="v-sd" type="number" step="0.1" min="0" placeholder="6"></label>
+    <label class="f">Stage height off the floor (m)<input id="v-deck" type="number" step="0.01" min="0" placeholder="1.1"></label>
+    <label class="f">Default bar trim above the deck (m)<input id="v-trim" type="number" step="0.1" min="0" placeholder="5"></label>
+    <label class="f">Plot title<input id="v-plot" placeholder="Lighting plot, April 2026"></label>
+    <label class="f">Patch title<input id="v-patchsrc" placeholder="Venue patch, September 2026"></label>
+    <label class="f">Production contact<input id="v-contact" placeholder="the venue's production manager"></label>
+    <label class="f">Source link (spec PDF URL, optional)<input id="v-srcurl" placeholder="https://"></label>
+  </div>
+  <label class="f">Notes shown at the top of the venue page<textarea id="v-notes" placeholder="Anything a touring LD should know: what's out of date, what to confirm."></textarea></label>
+</section>
+
+<section class="step" id="s-patch">
+  <div class="bh"><h2><span>2</span>Patch</h2><span class="src">CSV or XLSX sheet, MA3 Venue Patch Export CSV, PDF table, or MVR</span></div>
+  <div class="drop" id="patch-drop" tabindex="0" role="button" aria-label="Choose a patch file"><b>Drop a patch file here</b> or click to choose. CSV, XLSX, PDF or MVR.</div>
+  <input type="file" id="patch-in" accept=".csv,.tsv,.txt,.xlsx,.xls,.pdf,.mvr,.zip" hidden>
+  <div class="msg" id="patch-msg"></div>
+  <div id="patch-map" hidden>
+    <p class="lede">Check which column is which. The guess comes from the header names; rows without a universe and address are treated as section headings or skipped.</p>
+    <div class="grid" style="margin-top:8px">
+      <label class="f">Header row<select id="m-head"></select></label>
+    </div>
+    <div class="map" id="m-cols" style="margin-top:8px"></div>
+  </div>
+  <div class="tools"><span class="count" id="patch-count"></span></div>
+  <div class="tablebox" id="patch-box" hidden><table class="t"><thead><tr><th>ID</th><th>Fixture</th><th>Mode</th><th>Ch</th><th>Uni.Addr</th><th>Location</th><th>Plan type</th></tr></thead><tbody id="patch-body"></tbody></table></div>
+</section>
+
+<section class="step" id="s-plot">
+  <div class="bh"><h2><span>3</span>Plot</h2><span class="src">PDF (text is read directly) or an image (read with OCR)</span></div>
+  <div class="drop" id="plot-drop" tabindex="0" role="button" aria-label="Choose a plot file"><b>Drop the lighting plot here</b> or click to choose. PDF, PNG or JPG.</div>
+  <input type="file" id="plot-in" accept=".pdf,.png,.jpg,.jpeg,.webp" hidden>
+  <div class="tools" id="plot-tools" hidden>
+    <label class="f" style="flex:0 0 120px">Page<select id="plot-page"></select></label>
+    <label class="f" style="flex:0 0 220px">Plot labels are<select id="plot-labels"><option value="auto">Detect automatically</option><option value="id">Fixture IDs</option><option value="addr">DMX addresses</option></select></label>
+    <button class="btn primary" type="button" id="plot-read">Read fixtures off the plot</button>
+    <span class="count" id="plot-status"></span>
+  </div>
+  <div class="progress" id="plot-prog" hidden><i></i></div>
+  <div class="msg" id="plot-msg"></div>
+</section>
+
+<section class="step" id="s-fix">
+  <div class="bh"><h2><span>4</span>Fixtures</h2><span class="src">Calibrate the stage, then fix anything the reader got wrong</span></div>
+  <ol class="howto">
+    <li><b>Calibrate:</b> press <i>Mark DSE</i>, then click the downstage edge at stage right and at stage left. The stage width from step 1 sets the scale.</li>
+    <li><b>Check bars:</b> fixtures in the same row are grouped into a bar. Rename bars, set how far upstage (m) and the trim, or press <i>Regroup</i> after moving fixtures.</li>
+    <li><b>Fix fixtures:</b> drag to move. Click one to change its ID or type. Pick an unplaced patch ID and click the plot to add it. Red = not in the patch, dashed orange = the same ID twice.</li>
+  </ol>
+  <div class="editor">
+    <div class="canvasbox">
+      <div class="cvhd">
+        <button class="btn" type="button" id="t-cal" aria-pressed="false">Mark DSE</button>
+        <button class="btn" type="button" id="t-add" aria-pressed="false">Add fixture</button>
+        <button class="btn" type="button" id="t-regroup">Regroup bars</button>
+        <span class="sep"></span>
+        <button class="btn" type="button" id="z-out" aria-label="Zoom out">&minus;</button>
+        <button class="btn" type="button" id="z-fit">Fit</button>
+        <button class="btn" type="button" id="z-in" aria-label="Zoom in">+</button>
+        <span class="count" id="ed-status"></span>
+      </div>
+      <div class="viewport empty" id="vp">Load a plot in step 3, or an MVR in step 2.</div>
+    </div>
+    <div class="side">
+      <div class="card" id="sel-card">
+        <h3>Selected fixture</h3>
+        <p class="small" id="sel-none">Click a fixture on the plot.</p>
+        <div id="sel-form" hidden style="display:grid;gap:8px">
+          <div class="row"><label class="f">ID<input id="s-id" list="ids"></label><label class="f">Plan type<select id="s-t"></select></label></div>
+          <div class="small" id="s-info"></div>
+          <div class="row"><label class="f">Height override (m)<input id="s-z" type="number" step="0.1" placeholder="bar trim"></label><label class="f">Position name<input id="s-pos" placeholder="from bar"></label></div>
+          <div class="tools"><button class="btn" type="button" id="s-del">Delete</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Bars</h3>
+        <div class="small">Name &middot; upstage of DSE (m) &middot; trim (m)</div>
+        <div class="bars" id="bars"></div>
+      </div>
+      <div class="card">
+        <h3>Unplaced patch IDs <span class="count" id="un-count"></span></h3>
+        <div class="list" id="unplaced"></div>
+        <div class="small">Pick one, then click the plot to place it.</div>
+      </div>
+      <div class="card"><h3>Plan types</h3><div class="legend" id="legend"></div></div>
+    </div>
+  </div>
+  <datalist id="ids"></datalist>
+</section>
+
+<section class="step" id="s-out">
+  <div class="bh"><h2><span>5</span>Preview and export</h2></div>
+  <div class="msg warn" id="out-check"></div>
+  <div class="tools">
+    <button class="btn primary" type="button" id="o-preview">Preview on the site</button>
+    <button class="btn" type="button" id="o-zip">Download for the repo (.zip)</button>
+    <button class="btn" type="button" id="o-json">Download venue JSON only</button>
+    <button class="btn" type="button" id="o-proj">Save project</button>
+  </div>
+  <div class="msg" id="out-msg"></div>
+  <div class="card">
+    <h3>Adding it to the site</h3>
+    <ol class="howto">
+      <li>Download the zip and unzip it in the <code>tech-specs</code> repo folder. It adds <code>site/venues/&lt;id&gt;.json</code>, the plot image in <code>site/img/</code>, and an updated <code>site/venues/index.json</code>.</li>
+      <li>Commit and push. GitHub Pages redeploys and the venue appears as a new tab.</li>
+    </ol>
+    <p class="small">Preview uses the real site page with your draft added, so what you see is what will publish. Save project keeps the plot image and every correction, so you can come back and edit.</p>
+  </div>
+</section>
+
+</div></main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+/* ---------- state ----------
+   Plot space: pixels of the rendered plot image (x right, y down). The DSE calibration maps it to stage metres:
+   x across (negative = stage right), y upstage from the DSE. Fixtures always keep plot-space positions. */
+const TYPES={spot:"Moving spot / profile",wash:"Moving wash",par:"LED par",fres:"Fresnel",prof:"Profile",blind:"Blinder",strobe:"Strobe",haze:"Hazer",proj:"Projector",mate:"LED truss mate",batten:"LED batten"};
+const TCOL={spot:"var(--t-spot)",wash:"var(--t-wash)",par:"var(--t-par)",fres:"var(--t-fres)",prof:"var(--t-prof)",blind:"var(--t-blind)",strobe:"var(--t-strobe)",haze:"var(--t-haze)",proj:"var(--t-proj)",mate:"var(--t-mate)",batten:"var(--t-batten)"};
+const blank=()=>({v:{name:"",tab:"",id:"",addr:"",sw:"",sd:"",deck:"",trim:"",plot:"",patchsrc:"",contact:"",srcurl:"",notes:""},
+  patchFile:"",rows:[],types:{},plotFile:"",img:null,imgW:0,imgH:0,cal:null,fx:[],bars:[],nextKey:1});
+let S=blank();
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:null};
+let saveT=0;
+function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem("builder:state",JSON.stringify(S))}catch(_){try{localStorage.setItem("builder:state",JSON.stringify({...S,img:null}))}catch(__){}}},300)}
+function load(){try{const s=JSON.parse(localStorage.getItem("builder:state"));if(s&&s.v)S=Object.assign(blank(),s)}catch(_){}}
+
+/* ---------- lazy libraries ---------- */
+const libs={};
+function script(src){return libs[src]||(libs[src]=new Promise((ok,no)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>no(new Error("Couldn't load "+src));document.head.appendChild(s)}))}
+async function pdfjs(){await script("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";return window.pdfjsLib}
+const xlsx=()=>script("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js").then(()=>window.XLSX);
+const tesseract=()=>script("https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js").then(()=>window.Tesseract);
+
+/* ---------- step 1: venue ---------- */
+const VF=["name","tab","id","addr","sw","sd","deck","trim","plot","patchsrc","contact","srcurl","notes"];
+const slug=s=>String(s).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40);
+function venueToForm(){VF.forEach(k=>{const el=$({sw:"v-sw",sd:"v-sd",patchsrc:"v-patchsrc",srcurl:"v-srcurl"}[k]||"v-"+k);el.value=S.v[k]??""})}
+VF.forEach(k=>{const el=$({sw:"v-sw",sd:"v-sd",patchsrc:"v-patchsrc",srcurl:"v-srcurl"}[k]||"v-"+k);
+  el.addEventListener("input",()=>{S.v[k]=el.value;
+    if(k==="name"){if(!S.v.idTouched){S.v.id=slug(el.value);$("v-id").value=S.v.id}if(!S.v.tabTouched){S.v.tab=el.value.replace(/^the\s+/i,"").split(/\s+/).slice(0,2).join(" ");$("v-tab").value=S.v.tab}}
+    if(k==="id")S.v.idTouched=true;if(k==="tab")S.v.tabTouched=true;
+    if(["sw","sd","trim"].includes(k))drawEditor();save();checkOut()})});
+const stageW=()=>num(S.v.sw)||8,trimDef=()=>num(S.v.trim)||5;
+
+/* ---------- step 2: patch ---------- */
+let table=null;   /* raw 2D table from CSV/XLSX/PDF, kept for remapping */
+const FIELDS=[["id","Fixture ID"],["fx","Fixture type"],["mode","Mode"],["ch","Channels"],["u","Universe"],["a","Address"],["end","End address"],["loc","Location / notes"]];
+function parseCSV(text,delim){
+  const out=[];let row=[],cell="",q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++}else q=false}else cell+=c}
+    else if(c==='"')q=true;else if(c===delim){row.push(cell);cell=""}
+    else if(c==="\n"||c==="\r"){if(c==="\r"&&text[i+1]==="\n")i++;row.push(cell);out.push(row);row=[];cell=""}
+    else cell+=c}
+  row.push(cell);out.push(row);return out.filter(r=>r.some(x=>String(x).trim()!==""))}
+const HEADS={id:/^(fixture\s*(id|#|no\.?|number)|fid|id|plot\s*id|unit\s*(#|no\.?)?|chan(nel)?\s*(#|no\.?)?|#|no\.?)$/i,
+  fx:/^(fixture(\s*type)?|type|instrument|model|unit\s*type|lamp|fixture\s*name|gdtf.*)$/i,mode:/(mode|personality|dmx\s*mode)/i,
+  ch:/^(ch(annels?)?|footprint|#\s*ch|ch\.?\s*count|dmx\s*ch(annels)?|no\.?\s*of\s*ch.*)$/i,u:/^(uni(verse)?|u|line|port)$/i,
+  a:/(address|addr|^dmx$|start|patch|uni\.?\s*add)/i,end:/^(end|end\s*address|last)$/i,loc:/(location|position|notes|^bar$|layer|purpose|focus|^name$|hang)/i};
+function guessHeader(t){let best=0,bi=0;t.slice(0,25).forEach((r,i)=>{const n=r.filter(c=>Object.values(HEADS).some(re=>re.test(String(c).trim()))).length;if(n>best){best=n;bi=i}});return bi}
+function guessCols(head){const m={};const used=new Set();
+  for(const k of["id","u","end","ch","mode","fx","a","loc"]){const i=head.findIndex((h,j)=>!used.has(j)&&HEADS[k].test(String(h).trim()));if(i>=0){m[k]=i;used.add(i)}}
+  return m}
+function splitAddr(s){s=String(s).trim();let m=s.match(/^(\d+)\s*[.\/:\-]\s*(\d+)$/);if(m)return[+m[1],+m[2]];
+  m=s.match(/^[A-Za-z]\s*[.\/:\-]?\s*(\d+)$/);if(m)return[s.charCodeAt(0)%32,+m[1]];   /* A.101 style */
+  m=s.match(/^(\d+)$/);if(m){const n=+m[1];return n>512?[Math.floor((n-1)/512)+1,(n-1)%512+1]:[null,n]}return[null,null]}
+function chFrom(mode,fx){const s=`${mode} ${fx}`;const m=s.match(/(\d+)\s*-?\s*(ch(annel)?s?|dmx)\b/i)||s.match(/\bch\w*\s*(\d+)/i)||String(mode).match(/^(\d+)$/);return m?+m[1]:1}
+function rowsFromTable(t,hi,cols){
+  const rows=[];let pending=null;
+  for(const r of t.slice(hi+1)){const g=k=>cols[k]!=null&&cols[k]>=0?String(r[cols[k]]??"").trim():"";
+    const [au,a]=splitAddr(g("a"));let u=num(g("u"));if(u==null)u=au;if(u==null)u=1;
+    const id=g("id");
+    if(!(a>0)){const text=r.map(c=>String(c??"").trim()).filter(Boolean);if(text.length===1&&!/^\d+$/.test(text[0])&&text[0].length<60)pending=text[0];continue}
+    if(!id)continue;
+    const mode=g("mode"),fx=g("fx"),e=num(g("end"));
+    const ch=num(g("ch"))||(e>=a?e-a+1:chFrom(mode,fx));
+    if(pending){rows.push([pending]);pending=null}
+    rows.push([/^\d+$/.test(id)?+id:id,fx,mode,ch,u,a,g("loc")])}
+  return rows}
+function showMap(){
+  const box=$("patch-map");if(!table){box.hidden=true;return}box.hidden=false;
+  const hs=$("m-head");hs.innerHTML=table.t.slice(0,30).map((r,i)=>`<option value="${i}">Row ${i+1}: ${esc(r.filter(Boolean).slice(0,4).join(" | ").slice(0,70))}</option>`).join("");
+  hs.value=table.hi;
+  const head=table.t[table.hi]||[];
+  $("m-cols").innerHTML=FIELDS.map(([k,l])=>`<label class="f">${l}<select data-k="${k}"><option value="-1">(none)</option>${head.map((h,i)=>`<option value="${i}"${table.cols[k]===i?" selected":""}>${esc(String(h||"Column "+(i+1)).slice(0,30))}</option>`).join("")}</select></label>`).join("")}
+$("m-head").addEventListener("change",e=>{table.hi=+e.target.value;table.cols=guessCols(table.t[table.hi]||[]);applyTable()});
+$("m-cols").addEventListener("change",e=>{const k=e.target.dataset.k;if(!k)return;table.cols[k]=+e.target.value;applyTable(false)});
+function applyTable(remap=true){S.rows=rowsFromTable(table.t,table.hi,table.cols);if(remap)showMap();afterPatch()}
+function guessT(name){const s=String(name).toLowerCase();
+  if(/haze|hazer|fazer|faser|fog|smoke|df-?50|unique/.test(s))return"haze";
+  if(/strike\s*array|duet|blinder/.test(s))return"blind";
+  if(/strobe|ginamp|atomic|jdc|sceptron|strike\s*bolt/.test(s))return"strobe";
+  if(/blind|molefay|2-?lite|4-?lite|audience/.test(s))return"blind";
+  if(/batten|pixel\s*bar|led\s*bar|\bbar\b|strip|sunstrip|colorband|linear|fusion\s*bar/.test(s))return"batten";
+  if(/truss\s*mate|mate\b/.test(s))return"mate";
+  if(/projector|panasonic|epson|barco/.test(s))return"proj";
+  if(/fresnel|frezno|\bpc\b/.test(s))return"fres";
+  if(/wash|aura|b-?eye|spiider|\bwave\b|mini-?b\b|k10|k20|zb19/.test(s))return"wash";
+  if(/spot|beam|hybrid|moving|mover|mac\s|viper|mythos|robe|rogue|tourist|aurora|maverick|sharpy|pointe|bmfl|energy|\bera\s*\d|encore|esprite|forte/.test(s))return"spot";
+  if(/profile|source\s*4|s4\b|leko|ellips|eprofile|zoomspot|lustr|reve\s*e/.test(s))return"prof";
+  return"par"}
+const tFor=name=>S.types[name]||(S.types[name]=guessT(name));
+function afterPatch(){
+  const n=S.rows.filter(r=>r.length>1).length;
+  $("patch-count").textContent=n?`${n} fixtures${S.patchFile?" from "+S.patchFile:""}`:"";
+  $("ok-patch").textContent=n?"\u2713":"";
+  const box=$("patch-box");box.hidden=!n;
+  const kinds=[...new Set(S.rows.filter(r=>r.length>1).map(r=>r[1]))];kinds.forEach(tFor);
+  const opt=k=>Object.entries(TYPES).map(([t,l])=>`<option value="${t}"${S.types[k]===t?" selected":""}>${l}</option>`).join("");
+  let seen=new Set();
+  $("patch-body").innerHTML=S.rows.map(r=>{if(r.length===1)return`<tr class="grp"><td colspan="7">${esc(r[0])}</td></tr>`;
+    const first=!seen.has(r[1]);seen.add(r[1]);
+    return`<tr><td class="n"><b>${esc(r[0])}</b></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td><td class="n">${r[3]}</td><td class="n">${r[4]}.${r[5]}</td><td>${esc(r[6])}</td><td>${first?`<select data-kind="${esc(r[1])}">${opt(r[1])}</select>`:`<span class="small">${esc(TYPES[S.types[r[1]]])}</span>`}</td></tr>`}).join("");
+  $("ids").innerHTML=S.rows.filter(r=>r.length>1).map(r=>`<option value="${esc(r[0])}">${esc(r[1])}</option>`).join("");
+  save();drawEditor();checkOut()}
+$("patch-body").addEventListener("change",e=>{const k=e.target.dataset.kind;if(k==null)return;S.types[k]=e.target.value;
+  S.fx.forEach(f=>{const r=rowOf(f.id);if(r&&r[1]===k&&!f.tLocked)f.t=e.target.value});afterPatch()});
+const rowOf=id=>S.rows.find(r=>r.length>1&&String(r[0])===String(id));
+
+async function readPatch(file){
+  const msg=$("patch-msg");msg.className="msg";msg.textContent=`Reading ${file.name}\u2026`;S.patchFile=file.name;table=null;
+  const ext=file.name.toLowerCase().split(".").pop();
+  try{
+    if(ext==="mvr"||ext==="zip")return await readMVR(file);
+    let t;
+    if(ext==="pdf")t=await pdfTable(file);
+    else if(ext==="xlsx"||ext==="xls"){const X=await xlsx();const wb=X.read(await file.arrayBuffer());
+      const sh=wb.Sheets[wb.SheetNames.find(n=>/patch/i.test(n))||wb.SheetNames[0]];t=X.utils.sheet_to_json(sh,{header:1,raw:false,defval:""})}
+    else{const txt=(await file.text()).replace(/^\ufeff/,"");const d=[",",";","\t"].map(c=>[c,(txt.split("\n")[0].match(new RegExp(c==="\t"?"\t":"\\"+c,"g"))||[]).length]).sort((a,b)=>b[1]-a[1])[0][0];t=parseCSV(txt,d)}
+    t=t.map(r=>r.map(c=>String(c??"")));
+    const hi=guessHeader(t);table={t,hi,cols:guessCols(t[hi]||[])};
+    applyTable();
+    const n=S.rows.filter(r=>r.length>1).length;
+    msg.className=n?"msg":"msg bad";
+    msg.textContent=n?`Read ${n} fixtures. Check the column mapping below if anything looks off.`:"No fixtures with a universe and address were found. Pick the header row and columns below.";
+  }catch(err){msg.className="msg bad";msg.textContent=`Couldn't read ${file.name}: ${err.message}`}}
+
+/* PDF table: group text by line, split into columns at the header's x positions */
+async function pdfTable(file){
+  const lib=await pdfjs(),doc=await lib.getDocument({data:await file.arrayBuffer()}).promise,lines=[];
+  for(let p=1;p<=doc.numPages;p++){const page=await doc.getPage(p),tc=await page.getTextContent();
+    const items=tc.items.filter(i=>i.str.trim()).map(i=>({s:i.str.trim(),x:i.transform[4],y:i.transform[5],w:i.width}));
+    items.sort((a,b)=>b.y-a.y||a.x-b.x);
+    for(const it of items){const L=lines.length&&lines[lines.length-1];if(L&&L.p===p&&Math.abs(L.y-it.y)<3)L.items.push(it);else lines.push({p,y:it.y,items:[it]})}}
+  if(!lines.length)throw new Error("this PDF has no text (it may be a scan). Export the patch as CSV instead.");
+  /* words of one phrase ("Fixture ID") arrive as separate items; join items that nearly touch */
+  lines.forEach(l=>{l.items.sort((a,b)=>a.x-b.x);const m=[];for(const it of l.items){const p=m[m.length-1];if(p&&it.x-(p.x+p.w)<3.5){p.s+=" "+it.s;p.w=it.x+it.w-p.x}else m.push({...it})}l.items=m});
+  const hl=lines.reduce((b,l)=>{const n=l.items.filter(i=>Object.values(HEADS).some(re=>re.test(i.s))).length;return n>b.n?{l,n}:b},{l:null,n:0}).l;
+  let starts;
+  if(hl&&hl.items.length>=3){starts=hl.items.map(i=>i.x)}
+  else{const xs=lines.flatMap(l=>l.items.map(i=>Math.round(i.x/6)*6));const c={};xs.forEach(x=>c[x]=(c[x]||0)+1);starts=Object.keys(c).map(Number).filter(x=>c[x]>=lines.length*0.3).sort((a,b)=>a-b)}
+  const col=x=>{let k=0;for(let i=0;i<starts.length;i++)if(x>=starts[i]-8)k=i;return k};
+  return lines.map(l=>{const r=Array(starts.length).fill("");l.items.forEach(i=>{const k=col(i.x);r[k]=r[k]?r[k]+" "+i.s:i.s});return r})}
+
+/* MVR: fixtures, addresses and positions in one file */
+async function readMVR(file){
+  const zip=await JSZip.loadAsync(await file.arrayBuffer());
+  const gsd=Object.values(zip.files).find(f=>/GeneralSceneDescription\.xml$/i.test(f.name));
+  if(!gsd)throw new Error("no GeneralSceneDescription.xml inside");
+  const xml=new DOMParser().parseFromString(await gsd.async("string"),"application/xml");
+  const foot={};   /* "<gdtf file>|<mode>" -> channel count, from GDTFs embedded in the MVR */
+  for(const f of Object.values(zip.files).filter(f=>/\.gdtf$/i.test(f.name))){
+    try{const g=await JSZip.loadAsync(await f.async("arraybuffer"));const d=g.file(/description\.xml$/i)[0];if(!d)continue;
+      const gx=new DOMParser().parseFromString(await d.async("string"),"application/xml");
+      gx.querySelectorAll("DMXMode").forEach(m=>{let mx=0;m.querySelectorAll("DMXChannel").forEach(c=>String(c.getAttribute("Offset")||"").split(",").forEach(v=>{const n=parseInt(v,10);if(n>mx)mx=n}));foot[f.name.split("/").pop()+"|"+m.getAttribute("Name")]=mx})}catch(_){}}
+  const rows=[],placed=[];let lastLayer=null;
+  const matOf=el=>{const m=el.querySelector(":scope > Matrix");if(!m)return[0,0,0];const v=m.textContent.match(/-?[\d.eE+-]+/g).map(Number);return v.length>=12?[v[9],v[10],v[11]]:[0,0,0]};
+  const walk=(el,off,layer)=>{for(const c of el.children){
+    if(c.tagName==="Layer"){walk(c,off,c.getAttribute("name")||layer);continue}
+    if(c.tagName==="ChildList"||c.tagName==="Layers"){walk(c,off,layer);continue}
+    if(c.tagName==="GroupObject"||c.tagName==="Truss"||c.tagName==="SceneObject"){const o=matOf(c);walk(c,[off[0]+o[0],off[1]+o[1],off[2]+o[2]],layer);continue}
+    if(c.tagName!=="Fixture")continue;
+    const q=s=>(c.querySelector(":scope > "+s)||{}).textContent||"";
+    const pick=[q("FixtureID"),q("FixtureIDNumeric"),q("UnitNumber")].map(x=>x.trim()).find(x=>x&&x!=="0");
+    const id=pick||c.getAttribute("name")||"";
+    const adr=c.querySelector(":scope > Addresses > Address");let u=null,a=null;
+    if(adr&&+adr.textContent.trim()!==0){const t=adr.textContent.trim();const m=t.match(/^(\d+)\.(\d+)$/);if(m){u=+m[1];a=+m[2]}else{const n=parseInt(t,10);u=Math.floor((n-1)/512)+1;a=(n-1)%512+1}}
+    const spec=q("GDTFSpec"),mode=q("GDTFMode"),name=spec.replace(/\.gdtf$/i,"").split("@").slice(0,2).join(" ").replace(/_/g," ")||c.getAttribute("name")||"Fixture";
+    const p=matOf(c);const pos=[(off[0]+p[0])/1000,(off[1]+p[1])/1000,(off[2]+p[2])/1000];
+    if(layer!==lastLayer){rows.push([layer||"Fixtures"]);lastLayer=layer}
+    if(a)rows.push([/^\d+$/.test(id)?+id:id,name,mode,foot[spec.split("/").pop()+"|"+mode]||chFrom(mode,name),u,a,c.getAttribute("name")||layer||""]);
+    placed.push({id:/^\d+$/.test(id)?+id:id,name,x:pos[0],y:pos[1],z:pos[2]})}};
+  const scene=xml.querySelector("Scene");if(!scene)throw new Error("the MVR has no scene");
+  walk(scene,[0,0,0],"");
+  if(rows.some(r=>r.length>1)){S.rows=rows;afterPatch()}   /* an unpatched MVR keeps any patch already loaded */
+  const msg=$("patch-msg");
+  const np=rows.filter(r=>r.length>1).length;msg.className=np?"msg":"msg warn";msg.textContent=`Read ${placed.length} fixture positions from the MVR${np?` and ${np} patched fixtures`:"; it has no DMX addresses, so load a patch file too (the MVR positions stay)"}. Mark the DSE in step 4 if the model's origin isn't the downstage edge.`;
+  if(placed.length)placeFromMVR(placed)}
+
+/* MVR positions: no plot needed. Build a blank sheet at 60 px/m, upstage up, with the DSE at the model's Y = 0
+   (move it with the DSE tool if the model's origin is elsewhere). */
+function placeFromMVR(placed){
+  const PX=60,xs=placed.map(p=>p.x),ys=placed.map(p=>p.y),pad=2;
+  const x0=Math.min(...xs,-stageW()/2)-pad,x1=Math.max(...xs,stageW()/2)+pad,y0=Math.min(...ys,0)-pad,y1=Math.max(...ys,num(S.v.sd)||6)+pad;
+  const W=Math.round((x1-x0)*PX),H=Math.round((y1-y0)*PX);
+  const c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,W,H);
+  g.strokeStyle="#e3e8ed";for(let x=Math.ceil(x0);x<=x1;x++){g.beginPath();g.moveTo((x-x0)*PX,0);g.lineTo((x-x0)*PX,H);g.stroke()}
+  for(let y=Math.ceil(y0);y<=y1;y++){g.beginPath();g.moveTo(0,(y1-y)*PX);g.lineTo(W,(y1-y)*PX);g.stroke()}
+  g.fillStyle="#5b6673";g.font="14px sans-serif";g.fillText("Positions from MVR \u00b7 1 square = 1 m \u00b7 upstage at top",10,20);
+  S.img=c.toDataURL("image/png");S.imgW=W;S.imgH=H;S.plotFile=S.plotFile||"MVR positions";
+  const P=(x,y)=>[(x-x0)*PX,(y1-y)*PX];
+  S.cal={a:P(-stageW()/2,0),b:P(stageW()/2,0),up:-1};
+  S.fx=placed.map(p=>{const [px,py]=P(p.x,p.y);return{k:S.nextKey++,id:p.id,t:tFor(p.name),name:p.name,px,py,z:+((p.z-(num(S.v.deck)||0)).toFixed(2))}});
+  setUpSign();regroup();
+  /* a bar's trim is its fixtures' median height; only fixtures well off it keep their own */
+  for(const b of S.bars){const mem=S.fx.filter(x=>x.bar===b.key),zs=mem.map(x=>x.z).sort((a,c)=>a-c);if(!zs.length)continue;
+    b.z=zs[Math.floor(zs.length/2)];mem.forEach(x=>{if(Math.abs(x.z-b.z)<0.15)delete x.z})}
+  drawEditor();$("ok-plot").textContent="\u2713";fit();save()}
+
+/* ---------- step 3: plot ---------- */
+let plotSrc=null;   /* {kind:"pdf",doc} or {kind:"img"} */
+async function readPlot(file){
+  const msg=$("plot-msg");msg.className="msg";msg.textContent=`Opening ${file.name}\u2026`;S.plotFile=file.name;
+  try{
+    if(/\.pdf$/i.test(file.name)){const lib=await pdfjs();const doc=await lib.getDocument({data:await file.arrayBuffer()}).promise;plotSrc={kind:"pdf",doc};
+      $("plot-page").innerHTML=Array.from({length:doc.numPages},(_,i)=>`<option value="${i+1}">${i+1} of ${doc.numPages}</option>`).join("");
+      await renderPage(1)}
+    else{const url=await new Promise(ok=>{const r=new FileReader();r.onload=()=>ok(r.result);r.readAsDataURL(file)});
+      const im=await loadImg(url);const sc=Math.min(1,3000/Math.max(im.width,im.height));
+      const c=document.createElement("canvas");c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+      plotSrc={kind:"img",canvas:c};$("plot-page").innerHTML=`<option>1</option>`;setImage(c)}
+    $("plot-tools").hidden=false;msg.textContent=`Loaded ${file.name}. Read the fixtures off it, or place them by hand in step 4.`;
+  }catch(err){msg.className="msg bad";msg.textContent=`Couldn't open ${file.name}: ${err.message}`}}
+const loadImg=src=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=()=>no(new Error("not an image"));i.src=src});
+async function renderPage(n){const page=await plotSrc.doc.getPage(n);const base=page.getViewport({scale:1});
+  const sc=Math.min(4,3000/Math.max(base.width,base.height)),vp=page.getViewport({scale:sc});
+  const c=document.createElement("canvas");c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);
+  await page.render({canvasContext:g,viewport:vp}).promise;plotSrc.page=page;plotSrc.vp=vp;setImage(c)}
+$("plot-page").addEventListener("change",e=>{if(plotSrc&&plotSrc.kind==="pdf")renderPage(+e.target.value)});
+function setImage(c){
+  /* keep the sheet light enough for local storage: JPEG at the rendered size */
+  S.img=c.toDataURL("image/jpeg",0.85);S.imgW=c.width;S.imgH=c.height;S.cal=null;S.fx=[];S.bars=[];
+  $("ok-plot").textContent="";fit();save();checkOut()}
+
+/* Tokens: words with a box in plot pixels. PDF text layer first; OCR when the page has no text. */
+async function plotTokens(prog){
+  if(plotSrc.kind==="pdf"){const tc=await plotSrc.page.getTextContent(),vp=plotSrc.vp,out=[];
+    for(const it of tc.items){const s=it.str;if(!s.trim())continue;
+      const h=Math.hypot(it.transform[2],it.transform[3])||10;
+      const [x0,y0]=vp.convertToViewportPoint(it.transform[4],it.transform[5]),[x1,y1]=vp.convertToViewportPoint(it.transform[4]+it.width,it.transform[5]+h);
+      const parts=s.split(/(\s+)/);let pos=0;const total=s.length||1;
+      for(const p of parts){if(p.trim()){const f0=pos/total,f1=(pos+p.length)/total;
+        out.push({s:p.trim(),x:x0+(x1-x0)*(f0+f1)/2,y:(y0+y1)/2,h:Math.abs(y1-y0)})}pos+=p.length}}
+    if(out.length>=5)return{tokens:out,how:"text"}}
+  const T=await tesseract();
+  const src=plotSrc.kind==="img"?plotSrc.canvas:await loadImg(S.img);
+  /* Plots are line drawings with small labels among truss lines. Upscaling about 3x and sparse-text segmentation
+     (psm 11) read them far better than Tesseract's defaults; thresholding to black and white made it worse. */
+  const up=Math.max(1,Math.min(3,8000/Math.max(src.width,src.height))),c=document.createElement("canvas");
+  c.width=Math.round(src.width*up);c.height=Math.round(src.height*up);const g=c.getContext("2d");
+  g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.imageSmoothingQuality="high";g.drawImage(src,0,0,c.width,c.height);
+  const w=await T.createWorker("eng",1,{logger:m=>{if(m.status==="recognizing text")prog(m.progress)}});
+  await w.setParameters({tessedit_pageseg_mode:"11"});
+  const res=await w.recognize(c);await w.terminate();
+  const words=(res.data.words||[]).filter(w=>w.text.trim()&&w.confidence>25);
+  return{tokens:words.map(w=>({s:w.text.trim().replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9.\/]+$/g,""),x:(w.bbox.x0+w.bbox.x1)/2/up,y:(w.bbox.y0+w.bbox.y1)/2/up,h:(w.bbox.y1-w.bbox.y0)/up,conf:w.confidence})).filter(t=>t.s),how:"OCR"}}
+
+/* Bar labels ("LX 3", "LED Truss", "FOH"), allowing for OCR's usual slips (LXS = LX5). */
+const DIGITISH={S:"5",O:"0",I:"1",L:"1",Z:"2",B:"8"};
+const BAR_WORD=/^(LX|E|ELEC|ELECTRIC|BAR|PIPE|TRUSS|BATTEN|BOOM|LADDER)$/,BAR_FIRST=/^(LED|FOH|US|DS|MID|BACK|FRONT|REAR|SIDE|UPSTAGE|DOWNSTAGE|CENTRE|CENTER|SR|SL|VIDEO)$/,BAR_SECOND=/^(TRUSS|BAR|BRIDGE|PIPE|BATTEN|LX|BOOM|POSITION)$/;
+function barLabelsFrom(tokens){
+  const out=[],U=t=>t.s.toUpperCase(),same=(a,b)=>b&&Math.abs(b.y-a.y)<Math.max(a.h,b.h)*0.8&&b.x>a.x&&b.x-a.x<Math.max(a.h,8)*6;
+  const fixNum=s=>s.split("").map(c=>DIGITISH[c]||c).join("");
+  const byLine=[...tokens].sort((a,b)=>a.y-b.y||a.x-b.x);
+  for(let i=0;i<byLine.length;i++){const a=byLine[i],A=U(a),nb=byLine.slice(i+1,i+6).find(b=>same(a,b)),B=nb?U(nb):"";
+    let m=A.match(/^(LX|ELEC|E|BAR|PIPE|TRUSS|BATTEN)[-.]?([0-9SOILZB]{1,2})$/);
+    if(m&&/\d/.test(fixNum(m[2]))&&(m[1]!=="E"||/^\d+$/.test(m[2]))){out.push({s:`${m[1]}${fixNum(m[2])}`,x:a.x,y:a.y,h:a.h});continue}
+    if(BAR_WORD.test(A)&&/^[0-9SOILZB]{1,2}$/.test(B)&&/\d/.test(fixNum(B))){out.push({s:`${A} ${fixNum(B)}`,x:(a.x+nb.x)/2,y:a.y,h:a.h});continue}
+    if(BAR_FIRST.test(A)&&BAR_SECOND.test(B)){out.push({s:`${a.s} ${nb.s}`,x:(a.x+nb.x)/2,y:a.y,h:a.h});continue}
+    if(A==="FOH")out.push({s:"FOH",x:a.x,y:a.y,h:a.h})}
+  return out}
+const normLoc=s=>String(s).toUpperCase().replace(/[^A-Z0-9]/g,"");
+/* No fixture IDs on the plot: spread each bar's patch fixtures (by the patch's location column) along the
+   labelled bar, in ID order, centred on the plot (or the DSE centre once calibrated). */
+function layoutByLabels(labels){
+  const placed=[],f=frame(),cx=f?f.C[0]:S.imgW/2;
+  const groups=new Map();
+  for(const r of S.rows.filter(r=>r.length>1)){const ln=normLoc(r[6]);
+    const lab=labels.filter(l=>{const k=normLoc(l.s);return ln.startsWith(k)&&!/^\d/.test(ln.slice(k.length))}).sort((a,b)=>normLoc(b.s).length-normLoc(a.s).length)[0];
+    if(lab){if(!groups.has(lab))groups.set(lab,[]);groups.get(lab).push(r)}}
+  for(const [lab,rows] of groups){rows.sort((a,b)=>(+a[0]||0)-(+b[0]||0));
+    let half=Math.abs(lab.x-cx)-lab.h*2.5;if(half<S.imgW*0.08)half=S.imgW*0.3;
+    rows.forEach((r,i)=>placed.push({k:S.nextKey++,id:r[0],t:tFor(r[1]),px:cx-half+(i+0.5)*(2*half/rows.length),py:lab.y,laid:true}))}
+  return{placed,bars:groups.size}}
+
+$("plot-read").addEventListener("click",async()=>{
+  if(!plotSrc){return}
+  const msg=$("plot-msg"),bar=$("plot-prog"),btn=$("plot-read");btn.disabled=true;bar.hidden=false;bar.firstElementChild.style.width="5%";
+  msg.className="msg";msg.textContent="Reading the plot\u2026 (OCR on an image can take a minute)";
+  try{
+    const {tokens,how}=await plotTokens(p=>bar.firstElementChild.style.width=Math.round(5+p*90)+"%");
+    const ids=new Map(),addrs=new Map(),addrOnly=new Map(),patch=S.rows.filter(r=>r.length>1),total=patch.length;
+    patch.forEach(r=>{ids.set(String(r[0]),r);addrs.set(`${r[4]}.${r[5]}`,r);addrOnly.set(String(r[5]),r)});
+    const singleUni=new Set(patch.map(r=>r[4])).size===1;
+    const byId=[],byAddr=[];
+    /* plot labels stand alone; a number followed by words on the same line ("6 of Fresno") is legend or notes text */
+    const wordy=t=>tokens.some(u=>u!==t&&/[A-Za-z]{2}/.test(u.s)&&Math.abs(u.y-t.y)<Math.max(t.h,u.h)*0.6&&u.x>t.x&&u.x-t.x<Math.max(t.h,10)*5);
+    for(const t of tokens){const s=t.s.replace(/^[(\[]|[)\]:,]$/g,"");if(/^\d+$/.test(s)&&wordy(t))continue;
+      if(ids.has(s))byId.push({t,row:ids.get(s)});
+      const m=s.match(/^(\d+)[.\/](\d+)$/);if(m&&addrs.has(`${+m[1]}.${+m[2]}`))byAddr.push({t,row:addrs.get(`${+m[1]}.${+m[2]}`)});
+      else if(singleUni&&/^\d+$/.test(s)&&addrOnly.has(s)&&!ids.has(s))byAddr.push({t,row:addrOnly.get(s)})}
+    S.barLabels=barLabelsFrom(tokens);
+    const uniq=h=>new Set(h.map(x=>String(x.row[0]))).size,strong=h=>uniq(h)>=Math.max(4,total*0.15);
+    let mode=$("plot-labels").value,hits=null,how2=how,laid=null;
+    if(!total){hits=tokens.filter(t=>/^\d{1,4}$/.test(t.s)).map(t=>({t,row:null,id:+t.s}));mode="numbers"}
+    else{if(mode==="auto")mode=uniq(byAddr)>uniq(byId)*1.2?"addr":"id";hits=mode==="addr"?byAddr:byId;
+      /* a few stray matches (legend counts, dimensions) mean the plot has no IDs: lay out by bar labels instead */
+      if(!strong(hits)&&$("plot-labels").value==="auto"){laid=layoutByLabels(S.barLabels);hits=null}}
+    S.fx=hits?hits.map(h=>({k:S.nextKey++,id:h.row?h.row[0]:h.id,t:h.row?tFor(h.row[1]):"par",px:h.t.x,py:h.t.y})):laid.placed;
+    regroup();
+    const ids2=S.fx.map(f=>String(f.id)),dups=ids2.filter((x,i)=>ids2.indexOf(x)!==i).length;
+    bar.firstElementChild.style.width="100%";
+    const labs=S.barLabels.map(l=>l.s).join(", ");
+    if(laid){msg.className=S.fx.length?"msg warn":"msg bad";
+      msg.textContent=S.fx.length?`This plot has no fixture ID labels, so ${S.fx.length} fixtures were spread along ${laid.bars} bars found by ${how} (${labs}), matched to the patch's location column. Drag each one onto its symbol in step 4; ${total-new Set(ids2).size} patch fixtures still need placing.`:
+        `No fixture IDs${S.barLabels.length?"":" or bar labels"} were found on this plot${S.barLabels.length?` (bars found: ${labs}, but none match the patch's location column)`:""}. Place fixtures by hand in step 4.`}
+    else{msg.className=S.fx.length?"msg":"msg warn";
+      msg.textContent=S.fx.length?`Found ${S.fx.length} fixture labels by ${how} (read as ${mode==="addr"?"DMX addresses":mode==="id"?"fixture IDs":"numbers"})${total?`, ${new Set(ids2).size} of ${total} patch fixtures`:""}${dups?`; ${dups} IDs appear more than once (dashed)`:""}. Next: mark the DSE in step 4.`:
+        `No labels on the plot matched the patch${how==="OCR"?" (OCR may have misread them)":""}. Try the other label setting, or place fixtures by hand in step 4.`}
+    $("ok-plot").textContent=S.fx.length?"\u2713":"";
+    fit();save();checkOut();location.hash="#s-fix"
+  }catch(err){msg.className="msg bad";msg.textContent="Reading failed: "+err.message}
+  finally{btn.disabled=false;setTimeout(()=>bar.hidden=true,600)}});
+
+/* ---------- calibration and bars ---------- */
+function frame(){const c=S.cal;if(!c)return null;
+  const dx=c.b[0]-c.a[0],dy=c.b[1]-c.a[1],L=Math.hypot(dx,dy)||1,k=stageW()/L,u=[dx/L,dy/L];
+  const v=[u[1]*c.up,-u[0]*c.up];   /* upstage unit vector in plot pixels */
+  const C=[(c.a[0]+c.b[0])/2,(c.a[1]+c.b[1])/2];
+  return{k,u,v,C,toM:(px,py)=>[k*((px-C[0])*u[0]+(py-C[1])*u[1]),k*((px-C[0])*v[0]+(py-C[1])*v[1])],
+    toP:(x,y)=>[C[0]+(x*u[0]+y*v[0])/k,C[1]+(x*u[1]+y*v[1])/k]}}
+/* Without calibration, pretend the plot is upright at 100 px per metre so bars can still be grouped. */
+const FR0={k:0.01,toM:(px,py)=>[px/100,-py/100],toP:(x,y)=>[x*100,-y*100]};
+const fr=()=>frame()||FR0;
+function setUpSign(){const c=S.cal;if(!c||!S.fx.length)return;c.up=1;const f=frame();
+  const ys=S.fx.map(x=>f.toM(x.px,x.py)[1]).sort((a,b)=>a-b);if(ys[Math.floor(ys.length/2)]<0)c.up=-1}
+function regroup(){
+  const f=fr(),items=S.fx.map(x=>({x,y:f.toM(x.px,x.py)[1]})).sort((a,b)=>a.y-b.y);
+  const gap=frame()?0.35:0.35,groups=[];
+  for(const it of items){const g=groups[groups.length-1];if(g&&it.y-g.ys[g.ys.length-1]<gap){g.ys.push(it.y);g.fx.push(it.x)}else groups.push({ys:[it.y],fx:[it.x]})}
+  const old=S.bars;S.bars=[];
+  let lx=0;
+  groups.forEach((g,i)=>{const y=g.ys.slice().sort((a,b)=>a-b)[Math.floor(g.ys.length/2)];
+    const lab=(S.barLabels||[]).map(l=>({l,d:Math.abs(f.toM(l.x,l.y)[1]-y)})).filter(o=>o.d<0.6).sort((a,b)=>a.d-b.d)[0];
+    /* keep a bar's name and trim when most of its fixtures were already on one bar */
+    const cnt={};g.fx.forEach(x=>{if(x.bar!=null)cnt[x.bar]=(cnt[x.bar]||0)+1});
+    const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1])[0],prev=top&&top[1]*2>=g.fx.length?old.find(b=>b.key===+top[0]):null;
+    const keep=prev&&!prev.auto,name=lab?lab.l.s:keep?prev.n:(frame()&&y<-0.2?"FOH":"LX"+(++lx));
+    const b={key:S.nextKey++,n:name,auto:!lab&&!keep,y:+y.toFixed(2),z:prev?prev.z:trimDef(),truss:g.fx.length>1||(prev?prev.truss:false)};
+    S.bars.push(b);g.fx.forEach(x=>x.bar=b.key)});
+  /* name collisions get a suffix */
+  const seen={};S.bars.forEach(b=>{if(seen[b.n]){b.n+=" "+(++seen[b.n])}else seen[b.n]=1});
+  if(!frame()){let i=0;S.bars.forEach(b=>{if(b.auto)b.n="LX"+(++i)})}
+  drawEditor();save()}
+
+/* ---------- step 4: editor ---------- */
+let zoom=1,tool=null,sel=null,armId=null,drag=null;
+const vp=$("vp");
+function fit(){if(!S.img){drawEditor();return}const w=vp.clientWidth>100?vp.clientWidth-20:800,h=vp.clientHeight>100?vp.clientHeight-20:600;zoom=Math.max(0.05,Math.min(w/S.imgW,h/S.imgH,2));drawEditor()}
+$("z-in").onclick=()=>{zoom*=1.25;drawEditor()};$("z-out").onclick=()=>{zoom/=1.25;drawEditor()};$("z-fit").onclick=fit;
+function setTool(t){tool=tool===t?null:t;$("t-cal").setAttribute("aria-pressed",tool==="cal");$("t-add").setAttribute("aria-pressed",tool==="add");
+  if(tool==="cal")S.calPts=[];status()}
+$("t-cal").onclick=()=>setTool("cal");$("t-add").onclick=()=>setTool("add");$("t-regroup").onclick=regroup;
+function status(){const s=$("ed-status");
+  s.textContent=tool==="cal"?(S.calPts&&S.calPts.length?"Now click the DSE at stage left.":"Click the DSE at stage right (usually the left end on the plot)."):
+    tool==="add"?(armId!=null?`Click to place ${armId}.`:"Click to add a fixture, or pick an unplaced ID first."):
+    S.cal?`Calibrated: ${stageW()} m DSE.`:"Not calibrated yet: press Mark DSE."}
+function drawEditor(){
+  if(!S.img){vp.className="viewport empty";vp.textContent="Load a plot in step 3, or an MVR in step 2.";sidePanels();status();return}
+  vp.className="viewport";
+  let sheet=vp.querySelector(".sheet");
+  if(!sheet||sheet.dataset.src!==String(S.img.length)){vp.innerHTML=`<div class="sheet"><img alt="Lighting plot"><svg></svg></div>`;sheet=vp.querySelector(".sheet");sheet.dataset.src=String(S.img.length);sheet.querySelector("img").src=S.img}
+  const img=sheet.querySelector("img"),svg=sheet.querySelector("svg");
+  img.style.width=S.imgW*zoom+"px";img.style.height=S.imgH*zoom+"px";sheet.style.width=S.imgW*zoom+"px";sheet.style.height=S.imgH*zoom+"px";
+  svg.setAttribute("viewBox",`0 0 ${S.imgW} ${S.imgH}`);svg.setAttribute("width",S.imgW*zoom);svg.setAttribute("height",S.imgH*zoom);
+  const z=1/zoom,f=frame();let g="";
+  if(f){const [ax,ay]=f.toP(-stageW()/2,0),[bx,by]=f.toP(stageW()/2,0),sd=num(S.v.sd);
+    g+=`<line class="calline" x1="${ax}" y1="${ay}" x2="${bx}" y2="${by}" style="stroke-width:${3*z}"/>`;
+    if(sd){const [cx,cy]=f.toP(stageW()/2,sd),[dx,dy]=f.toP(-stageW()/2,sd);g+=`<polygon points="${ax},${ay} ${bx},${by} ${cx},${cy} ${dx},${dy}" style="fill:rgba(224,85,58,.06);stroke:#e0553a;stroke-width:${1.5*z};stroke-dasharray:${6*z} ${4*z}"/>`}
+    g+=`<text class="barlab" x="${ax}" y="${ay+18*z}" style="font-size:${13*z}px;stroke-width:${4*z}px;fill:#e0553a">DSE</text>`;
+    for(const b of S.bars){const mem=S.fx.filter(x=>x.bar===b.key);if(!mem.length)continue;
+      const xs=mem.map(x=>f.toM(x.px,x.py)[0]),x0=Math.min(...xs)-0.3,x1=Math.max(...xs)+0.3;
+      const [p0x,p0y]=f.toP(x0,b.y),[p1x,p1y]=f.toP(x1,b.y);
+      if(b.truss)g+=`<line class="barline" x1="${p0x}" y1="${p0y}" x2="${p1x}" y2="${p1y}" style="stroke-width:${2*z};stroke-dasharray:${8*z} ${5*z}"/>`;
+      g+=`<text class="barlab" x="${p1x+10*z}" y="${p1y+5*z}" style="font-size:${14*z}px;stroke-width:${4*z}px">${esc(b.n)} ${b.y>=0?"+":""}${b.y} m</text>`}}
+  (S.calPts||[]).forEach(p=>g+=`<circle class="calpt" cx="${p[0]}" cy="${p[1]}" r="${7*z}"/>`);
+  const ids=S.fx.map(x=>String(x.id)),r=9*z;
+  for(const x of S.fx){const bad=S.rows.length&&!rowOf(x.id),dup=ids.indexOf(String(x.id))!==ids.lastIndexOf(String(x.id));
+    g+=`<g class="mk${x.k===sel?" sel":""}${bad?" bad":""}${dup?" dup":""}" data-k="${x.k}" transform="translate(${x.px} ${x.py})"><circle class="b" r="${r}" style="fill:${TCOL[x.t]||"#888"};stroke-width:${2*z}"/><text x="${r+3*z}" y="${4*z}" style="font-size:${12*z}px;stroke-width:${3*z}px">${esc(x.id)}</text></g>`}
+  svg.innerHTML=g;sidePanels();status()}
+function plotPt(e){const svg=vp.querySelector("svg");const rc=svg.getBoundingClientRect();return[(e.clientX-rc.left)/zoom,(e.clientY-rc.top)/zoom]}
+vp.addEventListener("pointerdown",e=>{if(!S.img)return;const mk=e.target.closest(".mk"),p=plotPt(e);
+  if(tool==="cal"){S.calPts=(S.calPts||[]).concat([p]);
+    if(S.calPts.length===2){S.cal={a:S.calPts[0],b:S.calPts[1],up:1};setUpSign();S.calPts=[];setTool("cal");regroup()}else drawEditor();return}
+  if(tool==="add"&&!mk){const id=armId!=null?armId:nextFreeId();const row=rowOf(id);
+    const x={k:S.nextKey++,id,t:row?tFor(row[1]):"par",px:p[0],py:p[1]};S.fx.push(x);sel=x.k;armId=null;nearestBar(x);drawEditor();selForm();save();checkOut();return}
+  if(mk){sel=+mk.dataset.k;const x=S.fx.find(q=>q.k===sel);drag={x,dx:p[0]-x.px,dy:p[1]-x.py,moved:false};vp.setPointerCapture(e.pointerId);drawEditor();selForm();e.preventDefault()}
+  else{sel=null;drawEditor();selForm()}});
+vp.addEventListener("pointermove",e=>{if(!drag)return;const p=plotPt(e);drag.x.px=p[0]-drag.dx;drag.x.py=p[1]-drag.dy;drag.moved=true;
+  const g=vp.querySelector(`.mk[data-k="${drag.x.k}"]`);if(g)g.setAttribute("transform",`translate(${drag.x.px} ${drag.x.py})`)});
+vp.addEventListener("pointerup",()=>{if(drag&&drag.moved){nearestBar(drag.x);drawEditor();save()}drag=null});
+function nearestBar(x){const f=fr(),y=f.toM(x.px,x.py)[1];const b=S.bars.map(b=>({b,d:Math.abs(b.y-y)})).sort((a,b)=>a.d-b.d)[0];
+  if(b&&b.d<0.4)x.bar=b.b.key;else{const nb={key:S.nextKey++,n:y<-0.2?"FOH":"Position "+(S.bars.length+1),y:+y.toFixed(2),z:trimDef(),truss:false};S.bars.push(nb);x.bar=nb.key}}
+const nextFreeId=()=>{const used=new Set(S.fx.map(x=>String(x.id)));const r=S.rows.find(r=>r.length>1&&!used.has(String(r[0])));if(r)return r[0];let n=1;while(used.has(String(n)))n++;return n};
+function selForm(){const x=S.fx.find(q=>q.k===sel);$("sel-none").hidden=!!x;$("sel-form").hidden=!x;if(!x)return;
+  $("s-id").value=x.id;$("s-t").innerHTML=Object.entries(TYPES).map(([t,l])=>`<option value="${t}"${x.t===t?" selected":""}>${l}</option>`).join("");
+  $("s-z").value=x.z??"";$("s-pos").value=x.pos??"";
+  const row=rowOf(x.id),f=frame(),m=f?f.toM(x.px,x.py):null,b=S.bars.find(b=>b.key===x.bar);
+  $("s-info").textContent=`${row?`${row[1]} \u00b7 ${row[4]}.${row[5]}`:"Not in the patch"}${m?` \u00b7 x ${m[0].toFixed(2)} m`:""}${b?` \u00b7 ${b.n}`:""}`}
+$("s-id").addEventListener("change",e=>{const x=S.fx.find(q=>q.k===sel);if(!x)return;const v=e.target.value.trim();x.id=/^\d+$/.test(v)?+v:v;const row=rowOf(x.id);if(row&&!x.tLocked)x.t=tFor(row[1]);drawEditor();selForm();save();checkOut()});
+$("s-t").addEventListener("change",e=>{const x=S.fx.find(q=>q.k===sel);if(!x)return;x.t=e.target.value;x.tLocked=true;drawEditor();save()});
+$("s-z").addEventListener("change",e=>{const x=S.fx.find(q=>q.k===sel);if(!x)return;x.z=num(e.target.value);save()});
+$("s-pos").addEventListener("change",e=>{const x=S.fx.find(q=>q.k===sel);if(!x)return;x.pos=e.target.value.trim()||undefined;save()});
+$("s-del").onclick=()=>{S.fx=S.fx.filter(q=>q.k!==sel);sel=null;drawEditor();selForm();save();checkOut()};
+document.addEventListener("keydown",e=>{if((e.key==="Delete"||e.key==="Backspace")&&sel!=null&&!/INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)){$("s-del").click();e.preventDefault()}
+  if(e.key==="Escape"){setTool(null);armId=null;sidePanels()}});
+function sidePanels(){
+  const used=new Set(S.fx.map(x=>String(x.id))),un=S.rows.filter(r=>r.length>1&&!used.has(String(r[0])));
+  $("un-count").textContent=un.length?`(${un.length})`:"";
+  $("unplaced").innerHTML=un.length?un.map(r=>`<button class="pill" type="button" data-id="${esc(r[0])}" aria-pressed="${String(armId)===String(r[0])}" title="${esc(r[1])}">${esc(r[0])}</button>`).join(""):`<span class="small">${S.rows.length?"Every patch fixture is on the plot.":"Load a patch in step 2."}</span>`;
+  $("bars").innerHTML=S.bars.filter(b=>S.fx.some(x=>x.bar===b.key)).sort((a,b)=>b.y-a.y).map(b=>`<div class="barrow" data-key="${b.key}"><input data-f="n" value="${esc(b.n)}" aria-label="Bar name"><input data-f="y" type="number" step="0.1" value="${b.y}" aria-label="Upstage of DSE"><input data-f="z" type="number" step="0.1" value="${b.z}" aria-label="Trim"><button type="button" data-f="truss" title="${b.truss?"Truss or bar: shown as a bar":"Free position: fixtures placed individually"}">${b.truss?"\u2550":"\u00b7"}</button></div>`).join("")||`<span class="small">Bars appear once fixtures are placed.</span>`;
+  const c={};S.fx.forEach(x=>c[x.t]=(c[x.t]||0)+1);
+  $("legend").innerHTML=Object.entries(TYPES).map(([t,l])=>`<span><i style="background:${TCOL[t]}"></i>${l}${c[t]?` <b>${c[t]}</b>`:""}</span>`).join("")}
+$("unplaced").addEventListener("click",e=>{const b=e.target.closest(".pill");if(!b)return;const v=b.dataset.id;armId=/^\d+$/.test(v)?+v:v;if(tool!=="add")setTool("add");else status();sidePanels()});
+$("bars").addEventListener("change",e=>{const row=e.target.closest(".barrow");if(!row)return;const b=S.bars.find(q=>q.key===+row.dataset.key),f=e.target.dataset.f;
+  if(f==="n"){b.n=e.target.value.trim()||b.n;b.auto=false}
+  if(f==="z")b.z=num(e.target.value)??b.z;
+  if(f==="y"){const ny=num(e.target.value);if(ny!=null&&frame()){const fr_=frame(),d=ny-b.y;S.fx.filter(x=>x.bar===b.key).forEach(x=>{const m=fr_.toM(x.px,x.py);[x.px,x.py]=fr_.toP(m[0],m[1]+d)});b.y=ny}}
+  drawEditor();save()});
+$("bars").addEventListener("click",e=>{const btn=e.target.closest("button[data-f=truss]");if(!btn)return;const b=S.bars.find(q=>q.key===+btn.closest(".barrow").dataset.key);b.truss=!b.truss;drawEditor();save()});
+
+/* ---------- step 5: build the venue ---------- */
+const trimNum=v=>Math.round(v*100)/100;
+function build(withImg){
+  const V=S.v,id=slug(V.id||V.name)||"venue",f=frame();
+  const rows=S.rows.length?S.rows:[];
+  const w=num(V.sw),d=num(V.sd),deck=num(V.deck);
+  const bars=[],fx=[];
+  for(const b of S.bars){const mem=S.fx.filter(x=>x.bar===b.key);if(!mem.length||!f)continue;
+    const ms=mem.map(x=>({x,m:f.toM(x.px,x.py)}));
+    if(b.truss){const xs=ms.map(o=>o.m[0]);bars.push({n:b.n,y:b.y,z:b.z,x0:trimNum(Math.min(...xs,w?-w/2:Infinity)-0.3),x1:trimNum(Math.max(...xs,w?w/2:-Infinity)+0.3)})}
+    for(const {x,m} of ms){const row=rowOf(x.id);
+      const o={id:x.id,t:x.t,x:trimNum(m[0]),y:b.truss?b.y:trimNum(m[1]),z:x.z??b.z,name:row?row[1]:x.name||TYPES[x.t]};
+      if(b.truss)o.bar=b.n;else o.pos=x.pos||b.n;if(x.pos&&b.truss)o.pos=x.pos;fx.push(o)}}
+  const counts={};rows.filter(r=>r.length>1).forEach(r=>counts[r[1]]=(counts[r[1]]||0)+1);
+  const total=rows.filter(r=>r.length>1).length;
+  const stats=[];if(w&&d)stats.push([`${w} \u00d7 ${d} m`,"Stage W \u00d7 D"]);if(deck!=null)stats.push([`${deck} m`,"Stage height"]);
+  stats.push([String(total||fx.length),"Fixtures in the rig"]);if(bars.length)stats.push([String(bars.length),"Bars and trusses"]);
+  const unplaced=rows.filter(r=>r.length>1&&!S.fx.some(x=>String(x.id)===String(r[0]))).length;
+  const venue={id,tab:V.tab||V.name||id,name:V.name||id,addr:V.addr||"",
+    chips:[[S.img&&S.plotFile!=="MVR positions"?"ok":"warn",V.plot?`Plot: ${V.plot}`:"Plot: supplied"],[total?"ok":"bad",total?`Patch: ${V.patchsrc||"supplied"}`:"No patch"]],
+    note:V.notes?esc(V.notes).replace(/\n/g,"<br>"):"",
+    stats,
+    rig:{title:"House rig",src:V.plot||S.plotFile||"",groups:[["Fixtures",Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([n,c])=>[String(c),n])]]},
+    patch:{rows,title:V.patchsrc?`Patch (${V.patchsrc})`:"Patch",src:S.patchFile||""},
+    drawings:S.img&&S.plotFile!=="MVR positions"?[[withImg?S.img:`img/${id}-plot.jpg`,V.plot||"Lighting plot",`From ${S.plotFile}.`]]:[],
+    sources:[V.srcurl?[V.plot||V.name+" spec",V.srcurl,"PDF"]:null,S.plotFile?[V.plot||"Lighting plot","Supplied pack: "+S.plotFile,""]:null,S.patchFile?[V.patchsrc||"Patch","Supplied pack: "+S.patchFile,""]:null].filter(Boolean),
+    contact:V.contact||"the venue's production manager"};
+  if(!venue.stats.length)venue.stats=[[String(fx.length),"Fixtures"]];
+  const rig=fx.length?{stage:w&&d?{w,d,deck:deck||0}:undefined,
+    note:`Built with the venue builder from ${S.plotFile||"the plot"}${S.patchFile?` and ${S.patchFile}`:""}. Positions are read off the plot and scaled from the ${stageW()} m stage width${unplaced?`; ${unplaced} patch fixtures aren't on the plot`:""}. Trims are as entered.`,
+    bars,fx}:null;
+  return{venue,rig}}
+function checkOut(){const el=$("out-check"),p=[];
+  if(!S.v.name)p.push("Give the venue a name (step 1).");
+  if(!S.rows.length)p.push("No patch loaded (step 2).");
+  if(!S.img)p.push("No plot or MVR positions (steps 3 and 2).");
+  else if(!S.cal)p.push("Mark the DSE in step 4 so positions can be scaled.");
+  if(!num(S.v.sw))p.push("Stage width isn't set, so 8 m is assumed.");
+  const ids=S.fx.map(x=>String(x.id)),d=[...new Set(ids.filter((x,i)=>ids.indexOf(x)!==i))];if(d.length)p.push(`Duplicate IDs on the plot: ${d.slice(0,8).join(", ")}${d.length>8?"\u2026":""}.`);
+  const bad=S.rows.length?S.fx.filter(x=>!rowOf(x.id)).map(x=>x.id):[];if(bad.length)p.push(`On the plot but not in the patch: ${bad.slice(0,8).join(", ")}${bad.length>8?"\u2026":""}.`);
+  el.className=p.length?"msg warn":"msg";el.textContent=p.length?p.join(" "):"Ready to preview and export.";}
+
+const out=(t,k="")=>{const m=$("out-msg");m.className="msg "+k;m.textContent=t};
+function download(name,blob){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),10000)}
+$("o-preview").onclick=async()=>{const d=build(true);
+  /* preview drawings: shrink the plot so the draft fits in local storage */
+  if(d.venue.drawings.length){const im=await loadImg(S.img),sc=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*sc;c.height=im.height*sc;c.getContext("2d").drawImage(im,0,0,c.width,c.height);d.venue.drawings[0][0]=c.toDataURL("image/jpeg",0.8)}
+  try{localStorage.setItem("builder:draft",JSON.stringify(d))}catch(_){d.venue.drawings=[];localStorage.setItem("builder:draft",JSON.stringify(d))}
+  window.open(`index.html?preview=1#${d.venue.id}`,"_blank");out(`Opened a preview of ${d.venue.name} in a new tab. Reload that tab after more changes here.`)};
+$("o-json").onclick=()=>{const d=build(false);download(`${d.venue.id}.json`,new Blob([JSON.stringify(d,null,1)],{type:"application/json"}));out(`Saved ${d.venue.id}.json. Put it in site/venues/ and add "${d.venue.id}.json" to site/venues/index.json.`)};
+$("o-zip").onclick=async()=>{const d=build(false),id=d.venue.id,z=new JSZip();
+  z.file(`site/venues/${id}.json`,JSON.stringify(d,null,1));
+  if(d.venue.drawings.length){const b64=S.img.split(",")[1];z.file(`site/img/${id}-plot.jpg`,b64,{base64:true})}
+  let list=[];try{const r=await fetch("venues/index.json",{cache:"no-cache"});if(r.ok)list=await r.json()}catch(_){}
+  if(!list.includes(`${id}.json`))list.push(`${id}.json`);z.file("site/venues/index.json",JSON.stringify(list,null,1)+"\n");
+  download(`${id}-venue.zip`,await z.generateAsync({type:"blob"}));
+  out(`Saved ${id}-venue.zip. Unzip it in the tech-specs repo folder, then commit and push.`)};
+$("o-proj").onclick=()=>{download(`${slug(S.v.id||S.v.name)||"venue"}-builder-project.json`,new Blob([JSON.stringify(S)],{type:"application/json"}));out("Saved the project. Open it later with Open project in step 1.")};
+$("proj-in").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const s=JSON.parse(await f.text());if(!s.v)throw new Error("not a builder project");S=Object.assign(blank(),s);plotSrc=S.img?{kind:"stored"}:null;init();out(`Opened ${f.name}.`)}catch(err){out("Couldn't open that file: "+err.message,"bad")}e.target.value=""});
+$("proj-new").onclick=()=>{if(!confirm("Clear this venue and start over?"))return;S=blank();table=null;plotSrc=null;try{localStorage.removeItem("builder:state")}catch(_){}init()};
+
+/* ---------- file inputs ---------- */
+function dropZone(zone,input,fn){zone.addEventListener("click",()=>input.click());zone.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();input.click()}});
+  input.addEventListener("change",()=>{if(input.files[0])fn(input.files[0]);input.value=""});
+  zone.addEventListener("dragover",e=>{e.preventDefault();zone.classList.add("over")});zone.addEventListener("dragleave",()=>zone.classList.remove("over"));
+  zone.addEventListener("drop",e=>{e.preventDefault();zone.classList.remove("over");if(e.dataTransfer.files[0])fn(e.dataTransfer.files[0])})}
+dropZone($("patch-drop"),$("patch-in"),readPatch);
+dropZone($("plot-drop"),$("plot-in"),readPlot);
+
+function init(){venueToForm();afterPatch();showMap();
+  if(S.img&&!plotSrc){plotSrc={kind:"stored"};}
+  $("plot-tools").hidden=!plotSrc||plotSrc.kind==="stored";
+  $("ok-plot").textContent=S.fx.length?"\u2713":"";fit();checkOut()}
+load();init();
+window.addEventListener("resize",()=>{if(S.img&&!vp.querySelector(".sheet"))fit()});
+</script>

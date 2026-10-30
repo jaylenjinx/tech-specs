@@ -169,7 +169,7 @@ tr.flash td{background:var(--hl)!important;transition:background .3s}
 
 <header class="mast"><div class="wrap">
   <h1>Sydney Venue Spec Pack</h1>
-  <p>Lighting plots, patches and production specs for Sydney venues: the Century Venues rooms plus City Recital Hall, the UNSW Roundhouse and Oxford Art Factory. Compiled October 2026 from the venues' own spec PDFs.</p>
+  <p>Lighting plots, patches and production specs for Sydney venues: the Century Venues rooms plus City Recital Hall, the UNSW Roundhouse and Oxford Art Factory. Compiled October 2026 from the venues' own spec PDFs. <a href="builder.html" style="color:#8fdcef">Add a venue from a plot and patch</a></p>
 </div></header>
 <nav class="tabs" aria-label="Venues"><div class="wrap" role="tablist" id="tabs"></div></nav>
 <main><div class="wrap" id="view"></div></main>
@@ -1279,12 +1279,25 @@ document.getElementById("lbClose").addEventListener("click",closeLB);
 lb.addEventListener("click",e=>{if(e.target===lb)closeLB()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!lb.hidden)closeLB()});
 
+/* ---------- extra venues: site/venues/*.json, made with builder.html and listed in venues/index.json.
+   ?preview adds the builder's unsaved draft (kept in this browser) on top. ---------- */
+function addVenue(d){if(!d||!d.venue||!d.venue.id)return;const v=d.venue;
+  const i=VENUES.findIndex(x=>x.id===v.id);if(i>=0)VENUES.splice(i,1,v);else VENUES.push(v);
+  if(d.rig)RIGS[v.id]=d.rig;else delete RIGS[v.id];
+  try{const s=localStorage.getItem("ma3:"+v.id);if(s)IMPORTED[v.id]=JSON.parse(s)}catch(_){}}
+async function loadVenues(){
+  try{const r=await fetch("venues/index.json",{cache:"no-cache"});
+    if(r.ok){const files=await r.json();
+      (await Promise.all(files.map(f=>fetch("venues/"+f,{cache:"no-cache"}).then(x=>x.ok?x.json():null).catch(()=>null)))).forEach(addVenue)}}catch(_){}
+  if(new URLSearchParams(location.search).has("preview")){try{addVenue(JSON.parse(localStorage.getItem("builder:draft")))}catch(_){}}}
+
 const tabs=document.getElementById("tabs");
-tabs.innerHTML=VENUES.map(v=>`<button class="tab" role="tab" type="button" data-id="${v.id}">${esc(v.tab)}</button>`).join("");
 tabs.addEventListener("click",e=>{const b=e.target.closest(".tab");if(!b)return;render(b.dataset.id);try{history.replaceState(null,"","#"+b.dataset.id)}catch(_){}try{localStorage.setItem("venue",b.dataset.id)}catch(_){}window.scrollTo({top:0})});
-let start=(location.hash||"").slice(1);
-if(!VENUES.some(v=>v.id===start)){try{start=localStorage.getItem("venue")||""}catch(_){start=""}}
-render(VENUES.some(v=>v.id===start)?start:"factory");
+loadVenues().then(()=>{
+  tabs.innerHTML=VENUES.map(v=>`<button class="tab" role="tab" type="button" data-id="${v.id}">${esc(v.tab)}</button>`).join("");
+  let start=(location.hash||"").slice(1);
+  if(!VENUES.some(v=>v.id===start)){try{start=localStorage.getItem("venue")||""}catch(_){start=""}}
+  render(VENUES.some(v=>v.id===start)?start:"factory")});
 window.addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(VENUES.some(v=>v.id===h))render(h)});
 try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{const t=document.querySelector(".tab[aria-selected=\"true\"]");if(t)render(t.dataset.id)})}catch(_){}
 </script>
